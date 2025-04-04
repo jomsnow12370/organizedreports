@@ -1,0 +1,81 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.card-voters {
+    border-left: 4px solid #6ea8fe;
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.card-voters:hover {
+    transform: translateY(-5px);
+    box-: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.voter-icon {
+    color: #6ea8fe;
+    opacity: 0.7;
+    font-size: 2.5rem;
+}
+
+.category-pill {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    margin-right: 0.3rem;
+    border-radius: 12px;
+}
+
+.mc-pill {
+    background-color: #6ea8fe;
+    color: #212529;
+}
+
+.dc-pill {
+    background-color: #ea868f;
+    color: #212529;
+}
+
+.bc-pill {
+    background-color: #20c997;
+    color: #212529;
+}
+
+.wl-pill {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.category-divider {
+    opacity: 0.2;
+    margin: 0.5rem 0;
+}
+
+.profile-img {
+    width: 70px;
+    /* Adjust the size as needed */
+    height: 70px;
+    border-radius: 50%;
+    /* Makes it circular */
+    object-fit: cover;
+    /* Ensures the image maintains aspect ratio */
+}
+
+@media print {
+    footer {
+        page-break-after: always;
+
+    }
+
+    #myTab {
+        display: none;
+    }
+
+    #printBtn {
+        display: none;
+    }
+
+    .removeonprint {
+        display: none !important;
+    }
+}
