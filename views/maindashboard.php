@@ -1,135 +1,107 @@
-<h3 class="text-light text-center">
-    2025 Warding Dashboard
-    <br>
-    <small>
-        <i>
-            <?php
-            if($mun != "") {
-                if(isset($_GET["brgy"]) != "") {
-                    echo $brgyName . ', ';
-                }
-                echo $mun;
-            }
-            ?>
-        </i>
-    </small>
-</h3>
-
-<!-- Total Voters Card -->
+<!-- Header Section -->
 <div class="row">
-    <div class="col-lg-4 mb-4">
-        <div class="card card-voters" id="voterCard" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#municipalityModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Voters
-                            <?php 
-                            // if($mun != "") {
-                            //     if($brgyId != "") {
-                            //         echo " of $brgyName, $mun <br><div class='text-muted' style='font-size:16px;font-weight:600'> <i>" . count($precinct_totals) . ' Precincts</i> </div>';
-                            //     } else {
-                            //         echo " of $mun <br><div class='text-muted' style='font-size:16px;font-weight:600'> <i>" . count($barangay_totals) . ' Barangays</i> </div>';
-                            //     }
-                            // }
-                            ?>
-                        </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php 
-                            // Get the total number of voters
-                            $total_voters = get_value("SELECT COUNT(*) from v_info INNER JOIN barangays ON barangays.id = v_info.barangayId WHERE v_info.record_type = 1 $munquery $brgyquery");              
-                            echo number_format($total_voters[0]);
-                            ?>
-                        </div>
+    <div class="col-md-12">
+        <div class="card mb-4 shadow border-0">
+            <div class="card-body bg-dark text-white rounded">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2 fw-bold">
+                            <?php
+                                if (isset($_GET["mun"])) {
+                                    if (isset($_GET["brgy"])) {
+                                        echo $brgyName . ', ' . $mun;
+                                    } else {
+                                        echo $mun;
+                                    }
+                                } else {
+                                    echo "Household Survey Province-wide";
+                                }
+                                ?>
+                        </h2>
+                        <button class="btn btn-sm btn-outline-success mt-2 removeonprint" data-bs-toggle="modal"
+                            data-bs-target="#municipalityModal">
+                            <i class="fa fa-repeat"></i> Select Address
+                        </button>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-users voter-icon"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer removeonprint">
-                <small>
-                    <i>
-                        Click to select 
-                        <?php 
-                        if($mun != "") {
-                            echo "barangay";
-                        } else {
-                            echo "municipality";
-                        }
-                        ?>
-                    </i>
-                </small>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4 mb-4">
-        <div class="card card-voters" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Households Warded
-                        </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($head_household); ?> / 
-                            <b class="text-danger">
-                                <?php echo number_format(count_household($c, $munquery, $brgyquery2)); ?>
-                            </b>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-home voter-icon"></i>
-                    </div>
-                </div>
-                <!-- Category Breakdown -->
-                <hr class="category-divider">
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <div class="d-flex flex-wrap mb-2">
-                            <div class="category-pill dc-pill me-2 mb-1">
-                                Household Members: <?php echo number_format($household_member); ?>
-                            </div>
-                            <div class="category-pill mc-pill me-2 mb-1">
-                                Total Warded Voters: <?php echo number_format($household_total); ?>
-                            </div>
-                        </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-sm btn-outline-primary removeonprint" id="printBtn"
+                            onclick="window.print()">
+                            <i class="fa fa-print"></i> Print Report
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-header">Leaders Summary</div>
+<!-- Statistics Cards Row -->
+<div class="row mb-4">
+    <!-- Total Voters Card -->
+    <div class="col-md-4 col-lg-4 mb-3">
+        <div class="card h-100 " id="voterCard" style="cursor: pointer;" data-bs-toggle="modal"
+            data-bs-target="#municipalityModal">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="text-xs text-uppercase text-primary fw-bold">
+                        Voters
+                    </div>
+                    <div><i class="fas fa-people voter-icon"></i></div>
+                </div>
+                <div class="text-center fw-bold" style="font-size: 3rem;">
+                    <?php 
+                // Get the total number of voters
+                $total_voters = get_value("SELECT COUNT(*) from v_info INNER JOIN barangays ON barangays.id = v_info.barangayId WHERE v_info.record_type = 1 $munquery $brgyquery");              
+                echo number_format($total_voters[0]);
+                ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 col-lg-8 mb-3">
+        <div class="card h-100">
+            <!-- <div class="card-header bg-secondary">
+                <h6 class="mb-0 fw-bold">Leaders Summary</h6>
+            </div> -->
             <div class="card-body">
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-md-6">
                         <div class="mb-3">
-                            <div class="stats-label">Municipal Coordinators</div>
-                            <div class="stats-value" id="mcCount">
+                            <div class="d-flex justify-content-between">
+                                <div class="text-xs text-uppercase text-primary fw-bold">Municipal Coordinators</div>
+                                <div><i class="fas fa-user-tie text-gray-300"></i></div>
+                            </div>
+                            <div class="h5 mb-0 fw-bold" id="mcCount">
                                 <?php echo number_format($total_mc); ?>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <div class="stats-label">District Coordinators</div>
-                            <div class="stats-value" id="dcCount">
+                            <div class="d-flex justify-content-between">
+                                <div class="text-xs text-uppercase text-danger fw-bold">District Coordinators</div>
+                                <div><i class="fas fa-user-friends text-gray-300"></i></div>
+                            </div>
+                            <div class="h5 mb-0 fw-bold" id="dcCount">
                                 <?php echo number_format($total_dc); ?>
                             </div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-md-6">
                         <div class="mb-3">
-                            <div class="stats-label">Barangay Coordinators</div>
-                            <div class="stats-value" id="bcCount">
+                            <div class="d-flex justify-content-between">
+                                <div class="text-xs text-uppercase text-success fw-bold">Barangay Coordinators</div>
+                                <div><i class="fas fa-users-cog text-gray-300"></i></div>
+                            </div>
+                            <div class="h5 mb-0 fw-bold" id="bcCount">
                                 <?php echo number_format($total_bc); ?>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <div class="stats-label">Ward Leaders</div>
-                            <div class="stats-value" id="wlCount">
+                            <div class="d-flex justify-content-between">
+                                <div class="text-xs text-uppercase text-warning fw-bold">Ward Leaders</div>
+                                <div><i class="fas fa-user-shield text-gray-300"></i></div>
+                            </div>
+                            <div class="h5 mb-0 fw-bold" id="wlCount">
                                 <?php echo number_format($total_wl); ?>
                             </div>
                         </div>
@@ -138,154 +110,164 @@
             </div>
         </div>
     </div>
+
+    <!-- Households Warded Card -->
+    <!-- Households Warded Card -->
+    <div class="col-md-6 col-lg-6 mb-3">
+        <div class="card h-100 shadow border-0 " data-bs-toggle="modal" data-bs-target="#householdModal"
+            style="cursor: pointer;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="text-uppercase text-success fw-bold fs-6">
+                        Households Warded
+                    </div>
+                    <div><i class="fas fa-home text-success fs-4"></i></div>
+                </div>
+
+                <?php
+            $total_households = count_household($c, $munquery, $brgyquery2);
+            $warded_percent = $total_households > 0 ? ($head_household / $total_households) * 100 : 0;
+            ?>
+
+                <div class="text-center mb-2">
+                    <span class="fw-bold display-6 text-success"><?php echo number_format($head_household); ?></span>
+                    <span class="fw-bold text-muted fs-5">/ <?php echo number_format($total_households); ?></span>
+                </div>
+
+                <div class="text-center mb-2">
+                    <span class="badge bg-success fs-6 px-3 py-2"><?php echo round($warded_percent, 1); ?>%
+                        Warded</span>
+                </div>
+
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                        style="width: <?php echo $warded_percent; ?>%;" aria-valuenow="<?php echo $warded_percent; ?>"
+                        aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warded Card -->
+    <div class="col-md-6 col-lg-6 mb-3">
+        <div class="card h-100 shadow border-0 " style="cursor: default;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="text-uppercase text-danger fw-bold fs-6">
+                        Total Warded Voters
+                    </div>
+                    <div><i class="fas fa-user-friends text-danger fs-4"></i></div>
+                </div>
+
+                <div class="text-center mb-3">
+                    <span class="fw-bold display-6 text-danger">
+                        <?php echo number_format($household_total); ?>
+                    </span>
+                </div>
+
+                <div class="text-center">
+                    <span class="badge bg-danger fs-6 px-3 py-2">
+                        Warded Voters
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Leaders Summary Card -->
+
 </div>
 
-<h5 class="text-light mt-4"><strong>Congressman</strong></h5>
-<div class="row">
-    <!-- Laynes -->
-    <div class="col-lg-3">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Laynes
+<!-- Congressman Section -->
+<div class="card mb-4">
+    <div class="card-header bg-dark py-3">
+        <h5 class="mb-0 fw-bold text-light">Congressman</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Laynes -->
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                    Laynes
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($cong_totals['Laynes']['total']); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <img src="assets/images/sammy.jpg" alt="Profile" class="profile-img">
+                            </div>
                         </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($cong_totals['Laynes']['total']); ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <img src="assets/images/sammy.jpg" alt="Profile" class="profile-img">
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Rodriguez -->
-    <div class="col-lg-3">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Rodriguez
+            <!-- Rodriguez -->
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card h-100  ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                    Rodriguez
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($cong_totals['Rodriguez']['total']); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <img src="assets/images/leo.jpg" alt="Profile" class="profile-img">
+                            </div>
                         </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($cong_totals['Rodriguez']['total']); ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <img src="assets/images/leo.jpg" alt="Profile" class="profile-img">
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Alberto -->
-    <div class="col-lg-3">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Alberto
+            <!-- Alberto -->
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card h-100 ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                    Alberto
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($cong_totals['Alberto']['total']); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <img src="assets/images/alberto.jpg" alt="Profile" class="profile-img">
+                            </div>
                         </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($cong_totals['Alberto']['total']); ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <img src="assets/images/alberto.jpg" alt="Profile" class="profile-img">
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Undecided -->
-    <div class="col-lg-3">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Undecided
+            <!-- Undecided -->
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card h-100  ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-danger text-uppercase mb-1">
+                                    Undecided
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($cong_totals['UndecidedCong']['total'] + $cong_blanks); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-question-circle voter-icon text-danger"></i>
+                            </div>
                         </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($cong_totals['UndecidedCong']['total'] + $cong_blanks); ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fa fa-question-circle" style="font-size:50px"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<h5 class="text-light mt-4"><strong>Governor</strong></h5>
-<div class="row">
-    <!-- Boss Te -->
-    <div class="col-lg-4">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Boss Te
-                        </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($gov_totals['Bosste']['total']); ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <img src="assets/images/bosste.jpg" alt="Profile" class="profile-img">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Asanza -->
-    <div class="col-lg-4">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Asanza
-                        </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($gov_totals['Asanza']['total']); ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <img src="assets/images/asanza.jpg" alt="Profile" class="profile-img">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Undecided -->
-    <div class="col-lg-4">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Undecided
-                        </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($gov_totals['UndecidedGov']['total'] + $gov_blanks); ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fa fa-question-circle" style="font-size:50px"></i>
                     </div>
                 </div>
             </div>
@@ -293,65 +275,145 @@
     </div>
 </div>
 
-<h5 class="text-light mt-4"><strong>Vice Governor</strong></h5>
-<div class="row">
-    <!-- Fernandez -->
-    <div class="col-lg-4">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Fernandez
-                        </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($vgov_totals['Fernandez']['total']); ?>
+<!-- Governor Section -->
+<div class="card mb-4">
+    <div class="card-header bg-dark py-3">
+        <h5 class="mb-0 fw-bold text-light">Governor</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Boss Te -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card h-100 border-left-success ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-success text-uppercase mb-1">
+                                    Boss Te
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($gov_totals['Bosste']['total']); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <img src="assets/images/bosste.jpg" alt="Profile" class="profile-img">
+                            </div>
                         </div>
                     </div>
-                    <div class="col-auto">
-                        <img src="assets/images/obet.jpg" alt="Profile" class="profile-img">
+                </div>
+            </div>
+
+            <!-- Asanza -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card h-100 ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-success text-uppercase mb-1">
+                                    Asanza
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($gov_totals['Asanza']['total']); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <img src="assets/images/asanza.jpg" alt="Profile" class="profile-img">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Undecided -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card h-100 ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-danger text-uppercase mb-1">
+                                    Undecided
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($gov_totals['UndecidedGov']['total'] + $gov_blanks); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-question-circle voter-icon text-danger"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Abundo -->
-    <div class="col-lg-4">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Abundo
+<!-- Vice Governor Section -->
+<div class="card mb-4">
+    <div class="card-header bg-dark py-3">
+        <h5 class="mb-0 fw-bold text-light">Vice Governor</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Fernandez -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card h-100 ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                    Fernandez
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($vgov_totals['Fernandez']['total']); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <img src="assets/images/obet.jpg" alt="Profile" class="profile-img">
+                            </div>
                         </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($vgov_totals['Abundo']['total']); ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <img src="assets/images/abundo.jpg" alt="Profile" class="profile-img">
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Undecided -->
-    <div class="col-lg-4">
-        <div class="card card-voters mb-2" data-bs-toggle="modal" data-bs-target="#householdModal">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Undecided
-                        </div>
-                        <div class="h5 mb-0 fw-bold">
-                            <?php echo number_format($vgov_totals['UndecidedVGov']['total'] + $vgov_blanks); ?>
+            <!-- Abundo -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card h-100  ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                    Abundo
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($vgov_totals['Abundo']['total']); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <img src="assets/images/abundo.jpg" alt="Profile" class="profile-img">
+                            </div>
                         </div>
                     </div>
-                    <div class="col-auto">
-                        <i class="fa fa-question-circle" style="font-size:50px"></i>
+                </div>
+            </div>
+
+            <!-- Undecided -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <div class="card h-100 ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-danger text-uppercase mb-1">
+                                    Undecided
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($vgov_totals['UndecidedVGov']['total'] + $vgov_blanks); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-question-circle voter-icon text-danger"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

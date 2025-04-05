@@ -23,7 +23,6 @@ function count_survey_responses($c, $remarks_txt, $is_household_head = true, $mu
               INNER JOIN quick_remarks ON quick_remarks.remarks_id = v_remarks.remarks_id
               WHERE record_type = 1  $munquery $brgyquery
               AND remarks_txt = '$remarks_txt'
-
               GROUP BY v_remarks.v_id";
     
     $result = mysqli_query($c, $query);

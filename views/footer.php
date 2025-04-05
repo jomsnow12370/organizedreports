@@ -54,7 +54,7 @@ function loadBarangays() {
         },
         dataType: "json",
         success: function(response) {
-            console.log(response); // Debugging line to check the response
+
             if (response.length > 0) {
                 var barangayOptions = '<option value="">Select Barangay</option>';
                 $.each(response, function(index, barangay) {

@@ -39,45 +39,36 @@ $household_submission_percent = $total_households > 0 ? ($submitted_households /
 ?>
 
 <!-- Header Section -->
-<div class="card mb-4">
-    <div class="card-body py-3 bg-dark">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h2 class="mb-1">
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4 shadow border-0">
+            <div class="card-body bg-dark text-white rounded">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2 fw-bold">
                             <?php
-                            if (isset($_GET["mun"])) {
-                                if (isset($_GET["brgy"])) {
-                                    echo $brgyName . ', ' . $mun;
+                                if (isset($_GET["mun"])) {
+                                    if (isset($_GET["brgy"])) {
+                                        echo $brgyName . ', ' . $mun;
+                                    } else {
+                                        echo $mun;
+                                    }
                                 } else {
-                                    echo $mun;
+                                    echo "Household Survey Province-wide";
                                 }
-                            } else {
-                                echo "Barangay Survey Dashboard";
-                            }
-                            ?>
+                                ?>
                         </h2>
-                        <button class="btn btn-sm btn-outline-success removeonprint" 
-                                style="cursor: pointer;" 
-                                data-bs-toggle="modal"
-                                data-bs-target="#municipalityModal">
+                        <button class="btn btn-sm btn-outline-success mt-2 removeonprint" data-bs-toggle="modal"
+                            data-bs-target="#municipalityModal">
                             <i class="fa fa-repeat"></i> Select Address
                         </button>
                     </div>
-                    <div class="col-md-6">
-                        <div class="d-flex justify-content-md-end">
-                            <!-- Button placeholder -->
-                        </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-sm btn-outline-primary removeonprint" id="printBtn"
+                            onclick="window.print()">
+                            <i class="fa fa-print"></i> Print Report
+                        </button>
                     </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="d-flex justify-content-md-end">
-                    <button class="btn btn-sm btn-outline-primary" id="printBtn" onclick="window.print()">
-                        <i class="fa fa-print"></i> Print Report
-                    </button>
                 </div>
             </div>
         </div>
@@ -98,12 +89,10 @@ $household_submission_percent = $total_households > 0 ? ($submitted_households /
                     <?php echo $submitted_barangays . '/' . $total_barangays; ?>
                 </div>
                 <div class="progress mb-1" style="height: 6px;">
-                    <div class="progress-bar bg-success" 
-                         role="progressbar"
-                         style="width: <?php echo round($barangay_submission_percent, 1); ?>%"
-                         aria-valuenow="<?php echo $submitted_barangays; ?>" 
-                         aria-valuemin="0"
-                         aria-valuemax="<?php echo $total_barangays; ?>">
+                    <div class="progress-bar bg-success" role="progressbar"
+                        style="width: <?php echo round($barangay_submission_percent, 1); ?>%"
+                        aria-valuenow="<?php echo $submitted_barangays; ?>" aria-valuemin="0"
+                        aria-valuemax="<?php echo $total_barangays; ?>">
                     </div>
                 </div>
                 <div class="small text-muted">
@@ -125,12 +114,10 @@ $household_submission_percent = $total_households > 0 ? ($submitted_households /
                     <?php echo $submitted_households . '/' . $total_households; ?>
                 </div>
                 <div class="progress mb-1" style="height: 6px;">
-                    <div class="progress-bar bg-primary" 
-                         role="progressbar"
-                         style="width: <?php echo round($household_submission_percent, 1); ?>%"
-                         aria-valuenow="<?php echo $submitted_households; ?>" 
-                         aria-valuemin="0"
-                         aria-valuemax="<?php echo $total_households; ?>">
+                    <div class="progress-bar bg-primary" role="progressbar"
+                        style="width: <?php echo round($household_submission_percent, 1); ?>%"
+                        aria-valuenow="<?php echo $submitted_households; ?>" aria-valuemin="0"
+                        aria-valuemax="<?php echo $total_households; ?>">
                     </div>
                 </div>
                 <div class="small text-muted">
@@ -179,16 +166,21 @@ $household_submission_percent = $total_households > 0 ? ($submitted_households /
 
 <!-- Status Message -->
 <?php
-$status_class = $barangay_submission_percent > 75 ? 'success' : 
-               ($barangay_submission_percent > 50 ? 'info' : 
-               ($barangay_submission_percent > 25 ? 'warning' : 'danger'));
-$status_icon = $barangay_submission_percent > 75 ? 'check-circle' : 
-              ($barangay_submission_percent > 50 ? 'info-circle' : 
-              ($barangay_submission_percent > 25 ? 'exclamation-triangle' : 'exclamation-circle'));
-$status_message = $barangay_submission_percent > 75 ? 'Great progress! Most barangays have submitted their data.' :
-                ($barangay_submission_percent > 50 ? 'Good progress. More than half of barangays have submitted data.' :
-                ($barangay_submission_percent > 25 ? 'Progress is ongoing. Follow up with remaining barangays.' :
-                'Submission rate is low. Immediate follow-up recommended.'));
+$status_class = $barangay_submission_percent >= 80 ? 'success' :
+               ($barangay_submission_percent >= 50 ? 'primary' :
+               ($barangay_submission_percent >= 30 ? 'info' :
+               ($barangay_submission_percent > 0 ? 'warning' : 'danger')));
+
+$status_icon = $barangay_submission_percent >= 80 ? 'check-circle' :
+              ($barangay_submission_percent >= 50 ? 'thumbs-up' :
+              ($barangay_submission_percent >= 30 ? 'info-circle' :
+              ($barangay_submission_percent > 0 ? 'exclamation-triangle' : 'exclamation-circle')));
+
+$status_message = $barangay_submission_percent >= 80 ? 'Excellent progress! Most barangays have fully submitted their data.' :
+                ($barangay_submission_percent >= 50 ? 'Good progress. Most barangays have at least partially submitted data.' :
+                ($barangay_submission_percent >= 30 ? 'Moderate progress. Some barangays have submitted data, follow up with remaining.' :
+                ($barangay_submission_percent > 0 ? 'Limited progress. Follow up with remaining barangays urgently.' :
+                'No submissions received. Immediate action recommended.')));
 ?>
 <div class="alert alert-<?php echo $status_class; ?> mb-4">
     <div class="d-flex align-items-center">
@@ -249,27 +241,27 @@ $status_message = $barangay_submission_percent > 75 ? 'Great progress! Most bara
                         
                         // Calculate completion percentage
                         $completion_percent = $brgy_total_households > 0 ? 
-                            round(($brgy_submitted_households / $brgy_total_households) * 100, 1) : 0;
+                            round(($brgy_submitted_households / $brgy_total_households) * 100, 0) : 0;
                         
                         // Determine status
-                        $status_class = "";
-                        $status_text = "";
-                        if ($brgy_submitted_households == 0) {
-                            $status_class = "danger";
-                            $status_text = "Not Started";
-                        } elseif ($completion_percent < 30) {
-                            $status_class = "warning";
-                            $status_text = "Just Started";
-                        } elseif ($completion_percent < 70) {
-                            $status_class = "info";
-                            $status_text = "In Progress";
-                        } elseif ($completion_percent < 100) {
-                            $status_class = "primary";
-                            $status_text = "Almost Complete";
-                        } else {
-                            $status_class = "success";
-                            $status_text = "Complete";
-                        }
+$status_class = "";
+$status_text = "";
+if ($brgy_submitted_households == 0) {
+    $status_class = "danger";
+    $status_text = "Not Started";
+} elseif ($completion_percent < 30) {
+    $status_class = "warning";
+    $status_text = "Just Started";
+} elseif ($completion_percent < 50) {
+    $status_class = "info";
+    $status_text = "Partially Submitted";
+} elseif ($completion_percent < 80) {
+    $status_class = "primary";
+    $status_text = "Mostly Submitted";
+} else {
+    $status_class = "success";
+    $status_text = "Fully Submitted";
+}
                     ?>
                     <tr class="<?php echo $brgy_submitted_households == 0 ? "table-danger" : ""; ?>">
                         <td><?php echo $key + 1; ?></td>
@@ -280,12 +272,10 @@ $status_message = $barangay_submission_percent > 75 ? 'Great progress! Most bara
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="progress flex-grow-1 me-2" style="height: 8px;">
-                                    <div class="progress-bar bg-<?php echo $status_class; ?>"
-                                         role="progressbar"
-                                         style="width: <?php echo $completion_percent; ?>%"
-                                         aria-valuenow="<?php echo $completion_percent; ?>"
-                                         aria-valuemin="0" 
-                                         aria-valuemax="100">
+                                    <div class="progress-bar bg-<?php echo $status_class; ?>" role="progressbar"
+                                        style="width: <?php echo $completion_percent; ?>%"
+                                        aria-valuenow="<?php echo $completion_percent; ?>" aria-valuemin="0"
+                                        aria-valuemax="100">
                                     </div>
                                 </div>
                                 <span class="text-muted small"><?php echo $completion_percent; ?>%</span>
@@ -316,12 +306,10 @@ $status_message = $barangay_submission_percent > 75 ? 'Great progress! Most bara
                         <td colspan="2">
                             <div class="d-flex align-items-center">
                                 <div class="progress flex-grow-1 me-2" style="height: 8px;">
-                                    <div class="progress-bar bg-primary" 
-                                         role="progressbar"
-                                         style="width: <?php echo round($household_submission_percent, 1); ?>%"
-                                         aria-valuenow="<?php echo round($household_submission_percent, 1); ?>"
-                                         aria-valuemin="0" 
-                                         aria-valuemax="100">
+                                    <div class="progress-bar bg-primary" role="progressbar"
+                                        style="width: <?php echo round($household_submission_percent, 1); ?>%"
+                                        aria-valuenow="<?php echo round($household_submission_percent, 1); ?>"
+                                        aria-valuemin="0" aria-valuemax="100">
                                     </div>
                                 </div>
                                 <span class="text-muted small">

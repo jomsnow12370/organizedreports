@@ -24,7 +24,11 @@ require_once 'views/header.php';
                 <button class="nav-link" id="families-tab" data-bs-toggle="tab" data-bs-target="#families" type="button"
                     role="tab" aria-controls="families" aria-selected="false">Turnouts</button>
             </li>
-            
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="households-tab" data-bs-toggle="tab" data-bs-target="#households"
+                    type="button" role="tab" aria-controls="households" aria-selected="false">Households</button>
+            </li>
+
         </ul>
         <!-- Tab content -->
         <div class="tab-content" id="myTabContent">
@@ -33,9 +37,8 @@ require_once 'views/header.php';
                 <!-- Dashboard content -->
                 <?php require_once 'views/maindashboard.php'; ?>
             </div>
-        </div>
-        <!-- Tab content -->
-        <div class="tab-content" id="myTabContent">
+
+            <!-- Tab content -->
             <div class="tab-pane fade" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
                 <!-- Families content -->
                 <?php require_once 'views/families.php'; ?>
@@ -44,6 +47,10 @@ require_once 'views/header.php';
             <div class="tab-pane fade" id="families" role="tabpanel" aria-labelledby="families-tab">
                 <!-- Turnouts content -->
                 <?php require_once 'views/turnouts.php'; ?>
+            </div>
+            <div class="tab-pane fade" id="households" role="tabpanel" aria-labelledby="households-tab">
+                <!-- Turnouts content -->
+                <?php require_once 'views/households.php'; ?>
             </div>
         </div>
     </div>

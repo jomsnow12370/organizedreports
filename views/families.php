@@ -1,84 +1,84 @@
 <div class="dashboard-header">
     <div class="row">
         <div class="col-md-12">
-            <div class="card mb-4">
-                <div class="card-body py-3 bg-dark">
+            <div class="card mb-4 shadow border-0">
+                <div class="card-body bg-dark text-white rounded">
                     <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h2 class="mb-1">
-                                        <?php
-                    if(isset($_GET["mun"])){
-                        if(isset($_GET["brgy"])){
-                        echo $brgyName . ', ' . $mun;
-                        }
-                        else{
-                        echo $mun;
-                        }
-                    } else {
-                        echo "Household Survey Province-wide";
-                    }
-                    ?>
-                                    </h2>
-                                    <button class="btn btn-sm btn-outline-success removeonprint"
-                                        style="cursor: pointer;" data-bs-toggle="modal"
-                                        data-bs-target="#municipalityModal">
-                                        <i class="fa fa-repeat"></i> Select Address
-                                    </button>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="d-flex justify-content-md-end">
-                                        <!-- Button moved from here -->
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="col-md-8">
+                            <h2 class="mb-2 fw-bold">
+                                <?php
+                                if (isset($_GET["mun"])) {
+                                    if (isset($_GET["brgy"])) {
+                                        echo $brgyName . ', ' . $mun;
+                                    } else {
+                                        echo $mun;
+                                    }
+                                } else {
+                                    echo "Household Survey Province-wide";
+                                }
+                                ?>
+                            </h2>
+                            <button class="btn btn-sm btn-outline-success mt-2 removeonprint" data-bs-toggle="modal"
+                                data-bs-target="#municipalityModal">
+                                <i class="fa fa-repeat"></i> Select Address
+                            </button>
                         </div>
-
-
-                        <div class="col-md-6">
-                            <div class="d-flex justify-content-md-end">
-                                <button class="btn btn-sm btn-outline-primary" id="printBtn" onclick="window.print()">
-                                    <i class="fa fa-print"></i> Print Report
-                                </button>
-                            </div>
+                        <div class="col-md-4 text-end">
+                            <button class="btn btn-sm btn-outline-primary removeonprint" id="printBtn"
+                                onclick="window.print()">
+                                <i class="fa fa-print"></i> Print Report
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-8 mt-3 mb-3 removeonprint">
-            <h5>SEARCH LASTNAME</h5>
+
+    <!-- Search Row -->
+    <div class="row mb-4">
+        <div class="col-md-8 removeonprint">
+            <h5 class="fw-bold">Search Lastname</h5>
         </div>
-        <div class="col-md-4 mt-3 mb-3">
-            <div class="search-box removeonprint">
+        <div class="col-md-4">
+            <div class="input-group removeonprint">
                 <input type="text" id="search" class="form-control" placeholder="Search by family name...">
             </div>
         </div>
-
     </div>
 </div>
 
+<!-- Stat Cards -->
 <div class="row mb-4">
-    <div class="col-md-4">
-        <div class="stats-card bg-primary text-white">
-            <h5>Total Families</h5>
-            <pre style="font-size: 8px;">WHERE COUNT(*) > 10 | LIMITED TO <?PHP echo $limit; ?> LASTNAMES</pre>
-            <h2 id="totalFamilies">0</h2>
+    <!-- Total Families -->
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow border-0 bg-primary text-white">
+            <div class="card-body text-center">
+                <div class="mb-2 text-uppercase fw-bold">Total Families</div>
+                <pre class="text-light"
+                    style="font-size: 10px;">WHERE COUNT(*) > 10 | LIMITED TO <?php echo $limit; ?> LASTNAMES</pre>
+                <div class="display-6 fw-bold" id="totalFamilies">0</div>
+            </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="stats-card bg-warning text-dark">
-            <h5>Avg. Warding Rate</h5>
-            <h2 id="avgWardingRate">0%</h2>
+
+    <!-- Avg. Warding Rate -->
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow border-0 bg-warning text-dark">
+            <div class="card-body text-center">
+                <div class="mb-2 text-uppercase fw-bold">Avg. Warding Rate</div>
+                <div class="display-6 fw-bold" id="avgWardingRate">0%</div>
+            </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="stats-card bg-danger text-white">
-            <h5>Low Warding Families</h5>
-            <h2 id="lowWardingCount">0</h2>
+
+    <!-- Low Warding Families -->
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow border-0 bg-danger text-white">
+            <div class="card-body text-center">
+                <div class="mb-2 text-uppercase fw-bold">Low Warding Families</div>
+                <div class="display-6 fw-bold" id="lowWardingCount">0</div>
+            </div>
         </div>
     </div>
 </div>
@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             document.getElementById('sortDropdown').textContent = 'Sort By: ' + this
-            .textContent;
+                .textContent;
         });
     });
 
