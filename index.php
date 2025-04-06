@@ -25,8 +25,12 @@ require_once 'views/header.php';
                     role="tab" aria-controls="families" aria-selected="false">Turnouts</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="households-tab" data-bs-toggle="tab" data-bs-target="#households"
-                    type="button" role="tab" aria-controls="households" aria-selected="false">Households</button>
+                <button class="nav-link" id="warded-tab" data-bs-toggle="tab" data-bs-target="#warded" type="button"
+                    role="tab" aria-controls="warded" aria-selected="false">Warded</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="notwarded-tab" data-bs-toggle="tab" data-bs-target="#notwarded"
+                    type="button" role="tab" aria-controls="notwarded" aria-selected="false">Non-Warded</button>
             </li>
 
         </ul>
@@ -48,10 +52,15 @@ require_once 'views/header.php';
                 <!-- Turnouts content -->
                 <?php require_once 'views/turnouts.php'; ?>
             </div>
-            <div class="tab-pane fade" id="households" role="tabpanel" aria-labelledby="households-tab">
+            <div class="tab-pane fade" id="warded" role="tabpanel" aria-labelledby="warded-tab">
                 <!-- Turnouts content -->
-                <?php require_once 'views/households.php'; ?>
+                <?php require_once 'views/warded.php'; ?>
             </div>
+            <div class="tab-pane fade" id="notwarded" role="tabpanel" aria-labelledby="notwarded-tab">
+                <!-- Turnouts content -->
+                <?php require_once 'views/not-warded.php'; ?>
+            </div>
+
         </div>
     </div>
 </body>
