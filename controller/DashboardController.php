@@ -124,9 +124,28 @@ foreach ($vgov_candidates as $candidate) {
     $total_warding_vgov += $head_count + $member_count;
 }
 
+$mayor_candidates = ['BossGov', 'Posoy', 'Arcilla', 'UndecidedMayor'];
+$mayor_totals = [];
+$total_warding_mayor = 0;
+
+foreach ($mayor_candidates as $candidate) {
+    $remarks = $candidate . '(Survey 2025)';
+    $head_count = count_survey_responses($c, $remarks, true,  $munquery, $brgyquery);
+    $member_count = count_survey_responses($c,  $remarks, false, $munquery, $brgyquery);
+    
+    $mayor_totals[$candidate] = [
+        'head' => $head_count,
+        'member' => $member_count,
+        'total' => $head_count + $member_count
+    ];
+    
+    $total_warding_mayor += $head_count + $member_count;
+}
+
+
 // // Calculate blanks
 $cong_blanks = $household_total - $total_warding_cong;
 $gov_blanks = $household_total - $total_warding_gov;
 $vgov_blanks = $household_total - $total_warding_vgov;
-
+$mayor_blanks = $household_total - $total_warding_mayor;
 ?>

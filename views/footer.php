@@ -1,6 +1,5 @@
-<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
-    integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
-
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
@@ -15,10 +14,89 @@
 
 <!-- Add Chart.js script at the bottom of the page before </footer> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Age Distribution Chart
     const ageCtx = document.getElementById('ageDistributionChart').getContext('2d');
+
+    const ageChart = new Chart(ageCtx, {
+        type: 'bar',
+        data: {
+            labels: <?php echo $age_labels; ?>,
+            datasets: [{
+                label: 'Number of Voters',
+                data: <?php echo $age_counts; ?>,
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 159, 64, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Non-Warded Voters by Age Group',
+                    font: {
+                        size: 16
+                    }
+                },
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.y + ' (' + <?php echo $age_percentages; ?>[
+                                context.dataIndex] + '%)';
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Voters'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Age Groups'
+                    }
+                }
+            }
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Age Distribution Chart
+    const ageCtx = document.getElementById('ageDistributionChartWarded').getContext('2d');
 
     const ageChart = new Chart(ageCtx, {
         type: 'bar',
@@ -225,87 +303,21 @@ $(document).ready(function() {
     // Add print classes to avoid printing DataTables elements
     $('.dataTables_filter').addClass('removeonprint');
 });
-</script>
-<script>
-// Add this after your existing chart code
-document.addEventListener('DOMContentLoaded', function() {
-    // Your existing chart code...
 
-    // Families Distribution Chart
-    const familyLabels = [
-        <?php 
-        $counter = 0;
-        foreach ($families as $family) {
-            if ($counter < 5) {
-                echo "'" . $family['v_lname'] . "', ";
-            }
-            $counter++;
-        }
-        
-        if (count($families) > 5) {
-            echo "'Others'";
-        }
-        ?>
-    ];
-
-    const familyData = [
-        <?php 
-        $counter = 0;
-        foreach ($families as $family) {
-            if ($counter < 5) {
-                echo $family['total'] . ", ";
-            }
-            $counter++;
-        }
-        
-        if (count($families) > 5) {
-            echo $other_families_count;
-        }
-        ?>
-    ];
-
-    const backgroundColors = [
-        'rgba(255, 99, 132, 0.7)',
-        'rgba(54, 162, 235, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
-        'rgba(75, 192, 192, 0.7)',
-        'rgba(153, 102, 255, 0.7)',
-        'rgba(255, 159, 64, 0.7)'
-    ];
-
-    const familiesCtx = document.getElementById('familiesDistributionChart').getContext('2d');
-    new Chart(familiesCtx, {
-        type: 'pie',
-        data: {
-            labels: familyLabels,
-            datasets: [{
-                data: familyData,
-                backgroundColor: backgroundColors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        boxWidth: 15
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const value = context.raw;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return `${context.label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
+$(document).ready(function() {
+    $('#barangaySummaryTableforWarded').DataTable({
+        "paging": false, // Disable pagination for simplicity
+        "info": false, // Hide "Showing X of Y entries"
+        "order": [], // Initially no sorting
+        "responsive": true,
+        "columnDefs": [{
+                "orderable": true,
+                "targets": 0
+            } // Disable sorting on the # column
+        ],
     });
+
+    // Add print classes to avoid printing DataTables elements
+    $('.dataTables_filter').addClass('removeonprint');
 });
 </script>

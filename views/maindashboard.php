@@ -49,11 +49,21 @@
                     <div><i class="fas fa-people voter-icon"></i></div>
                 </div>
                 <div class="text-center fw-bold" style="font-size: 3rem;">
-                    <?php 
-                // Get the total number of voters
-                $total_voters = get_value("SELECT COUNT(*) from v_info INNER JOIN barangays ON barangays.id = v_info.barangayId WHERE v_info.record_type = 1 $munquery $brgyquery");              
-                echo number_format($total_voters[0]);
-                ?>
+                    <?php
+// Get the total number of voters for this municipality/barangay
+$total_voters = get_value("SELECT COUNT(*) from v_info INNER JOIN barangays ON barangays.id = v_info.barangayId WHERE v_info.record_type = 1 $munquery $brgyquery");
+
+// Get the total number of voters province-wide
+$province_total = get_value("SELECT COUNT(*) from v_info INNER JOIN barangays ON barangays.id = v_info.barangayId WHERE v_info.record_type = 1");
+
+// Calculate percentage
+$percentage = ($total_voters[0] / $province_total[0]) * 100;
+
+echo number_format($total_voters[0]);
+?>
+                </div>
+                <div class=" text-primary text-center" style="font-size: 0.9rem;">
+                    <?php echo number_format($percentage, 2) . '% of voters province-wide.'; ?>
                 </div>
             </div>
         </div>
@@ -154,20 +164,20 @@
         <div class="card h-100 shadow border-0 " style="cursor: default;">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="text-uppercase text-danger fw-bold fs-6">
+                    <div class="text-uppercase text-warning fw-bold fs-6">
                         Total Warded Voters
                     </div>
-                    <div><i class="fas fa-user-friends text-danger fs-4"></i></div>
+                    <div><i class="fas fa-user-friends text-warning fs-4"></i></div>
                 </div>
 
                 <div class="text-center mb-3">
-                    <span class="fw-bold display-6 text-danger">
+                    <span class="fw-bold display-6 text-warning">
                         <?php echo number_format($household_total); ?>
                     </span>
                 </div>
 
                 <div class="text-center">
-                    <span class="badge bg-danger fs-6 px-3 py-2">
+                    <span class="badge bg-warning fs-6 px-3 py-2">
                         Warded Voters
                     </span>
                 </div>
@@ -198,7 +208,18 @@
                                     Laynes
                                 </div>
                                 <div class="h4 mb-0 fw-bold">
-                                    <?php echo number_format($cong_totals['Laynes']['total']); ?>
+                                    <?php 
+                                    $total = $cong_totals['Laynes']['total'];
+                                    $forty_percent_laynes = round($total * 0.4);
+                                    $sixty_percent_laynes = round($total * 0.6);
+                                      echo number_format($cong_totals['Laynes']['total']); 
+                                    ?>
+                                </div>
+                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                    title="Calculation: 60% of total Laynes supporters">
+                                    <i>
+                                        <?php echo number_format($sixty_percent_laynes); ?> Predicted votes
+                                    </i>
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -219,7 +240,20 @@
                                     Rodriguez
                                 </div>
                                 <div class="h4 mb-0 fw-bold">
-                                    <?php echo number_format($cong_totals['Rodriguez']['total']); ?>
+                                    <?php 
+                                       $total_rodriguez = $cong_totals['Rodriguez']['total'];
+                                     
+                                    echo number_format($cong_totals['Rodriguez']['total']); 
+                                    ?>
+                                </div>
+                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                    title="Calculation: (40% of the total Laynes Supporters) + total Rodriguez + undecided">
+                                    <i>
+                                        <?php 
+                                        echo number_format($forty_percent_laynes + $total_rodriguez + $cong_totals['UndecidedCong']['total'] + $cong_blanks); 
+                                        ?>
+                                        Predicted votes
+                                    </i>
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -240,7 +274,9 @@
                                     Alberto
                                 </div>
                                 <div class="h4 mb-0 fw-bold">
-                                    <?php echo number_format($cong_totals['Alberto']['total']); ?>
+                                    <?php 
+                                    echo number_format($cong_totals['Alberto']['total']); 
+                                    ?>
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -292,7 +328,17 @@
                                     Boss Te
                                 </div>
                                 <div class="h4 mb-0 fw-bold">
-                                    <?php echo number_format($gov_totals['Bosste']['total']); ?>
+                                    <?php 
+                                        $forty_percent_bosste = round($gov_totals['Bosste']['total'] * 0.4);
+                                    $sixty_percent_bosste = round($gov_totals['Bosste']['total'] * 0.6);
+                                    echo number_format($gov_totals['Bosste']['total']);
+                                     ?>
+                                </div>
+                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                    title="Calculation: 60% of total Boss Te supporters">
+                                    <i>
+                                        <?php echo number_format($sixty_percent_bosste); ?> Predicted votes
+                                    </i>
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -313,7 +359,16 @@
                                     Asanza
                                 </div>
                                 <div class="h4 mb-0 fw-bold">
-                                    <?php echo number_format($gov_totals['Asanza']['total']); ?>
+                                    <?php 
+                                    $total_asanza = $gov_totals['Asanza']['total'];
+                                    echo number_format($gov_totals['Asanza']['total']); ?>
+                                </div>
+                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                    title="Calculation: 40% from total of Boss Te + total Asanza + undecided">
+                                    <i>
+                                        <?php echo number_format($forty_percent_bosste + $total_asanza + $gov_totals['UndecidedGov']['total'] + $gov_blanks); ?>
+                                        Predicted votes
+                                    </i>
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -365,7 +420,17 @@
                                     Fernandez
                                 </div>
                                 <div class="h4 mb-0 fw-bold">
-                                    <?php echo number_format($vgov_totals['Fernandez']['total']); ?>
+                                    <?php 
+                                    $total_fernandez = $vgov_totals['Fernandez']['total'];
+                                    $forty_percent_fernandez = round($total_fernandez * 0.4);
+                                    $sixty_percent_fernandez = round($total_fernandez * 0.6);
+                                    echo number_format($vgov_totals['Fernandez']['total']); ?>
+                                </div>
+                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                    title="Calculation: 60% of total Fernandez supporters">
+                                    <i>
+                                        <?php echo number_format($sixty_percent_fernandez); ?> Predicted votes
+                                    </i>
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -386,7 +451,16 @@
                                     Abundo
                                 </div>
                                 <div class="h4 mb-0 fw-bold">
-                                    <?php echo number_format($vgov_totals['Abundo']['total']); ?>
+                                    <?php 
+                                     $total_abundo = $vgov_totals['Abundo']['total'];
+                                    echo number_format($vgov_totals['Abundo']['total']); ?>
+                                </div>
+                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                    title="Calculation: 40% from total of Fernandez + total Abundo + undecided">
+                                    <i>
+                                        <?php echo number_format($forty_percent_fernandez + $total_abundo + $vgov_totals['UndecidedVGov']['total'] + $vgov_blanks); ?>
+                                        Predicted votes
+                                    </i>
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -417,6 +491,125 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
+<?php 
+    if($mun == "VIRAC" || $mun == ""){
+        ?>
+<div class="card mb-4">
+    <div class="card-header bg-dark py-3">
+        <h5 class="mb-0 fw-bold text-light">Virac Mayor</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Fernandez -->
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card h-100 ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                    Boboy Cua
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php 
+                                     $total_boboy = $mayor_totals['BossGov']['total'];
+                                    $forty_percent_boboy = round($total_boboy * 0.4);
+                                    $sixty_percent_boboy = round($total_boboy * 0.6);
+                                    echo number_format($mayor_totals['BossGov']['total']); ?>
+                                </div>
+                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                    title="Calculation: 60% of total Cua supporters">
+                                    <i>
+                                        <?php echo number_format($sixty_percent_boboy); ?> Predicted votes
+                                    </i>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <img src="assets/images/bossgov.jpg" alt="Profile" class="profile-img">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Abundo -->
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card h-100  ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                    Posoy
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php 
+                                     $total_posoy = $mayor_totals['Posoy']['total'];
+                                    echo number_format($mayor_totals['Posoy']['total']); ?>
+                                </div>
+                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                    title="Calculation: 40% from total of Cua + total Posoy + undecided">
+                                    <i>
+                                        <?php echo number_format($forty_percent_boboy + $total_posoy + $mayor_totals['UndecidedMayor']['total'] + $vgov_blanks); ?>
+                                        Predicted votes
+                                    </i>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <img src="assets/images/posoyhaha.jpg" alt="Profile" class="profile-img">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card h-100  ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                    Arcilla
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php 
+                                     $total_arcilla = $mayor_totals['Arcilla']['total'];
+                                    echo number_format($mayor_totals['Arcilla']['total']); ?>
+                                </div>
+
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-user-circle voter-icon text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Undecided -->
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card h-100 ">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-danger text-uppercase mb-1">
+                                    Undecided
+                                </div>
+                                <div class="h4 mb-0 fw-bold">
+                                    <?php echo number_format($mayor_totals['UndecidedMayor']['total'] + $mayor_blanks); ?>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-question-circle voter-icon text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<?php
+    }
+?>

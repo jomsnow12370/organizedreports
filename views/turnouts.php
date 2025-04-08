@@ -248,10 +248,10 @@ $status_class = "";
 $status_text = "";
 if ($brgy_submitted_households == 0) {
     $status_class = "danger";
-    $status_text = "Not Started";
+    $status_text = "No Submissions";
 } elseif ($completion_percent < 30) {
     $status_class = "warning";
-    $status_text = "Just Started";
+    $status_text = "Low Submissions";
 } elseif ($completion_percent < 50) {
     $status_class = "info";
     $status_text = "Partially Submitted";
