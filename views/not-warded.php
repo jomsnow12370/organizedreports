@@ -498,7 +498,7 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
     </div>
 </div>
 <?php 
-if($munquery !="" && $brgyquery != ""){
+// if (isset($_GET["mun"]) != "" && isset($_GET["brgy"]) != "") {
   ?>
 <div class="row">
     <?php
@@ -598,5 +598,5 @@ if($munquery !="" && $brgyquery != ""){
 </div>
 <?php
 
-}
+//}
 ?>

@@ -1,393 +1,249 @@
 <?php
-// Example variable initialization if not yet set
 $mun = isset($_GET['mun']) ? $_GET['mun'] : null;
 $brgy = isset($_GET['brgy']) ? $_GET['brgy'] : null;
-// These must be defined properly elsewhere in your code
-// $brgyName = ...
-// $munquery = ...
-// $brgyquery = ...
 
-// Get total counts for summary cards
-$total_barangays = get_value("SELECT COUNT(*) FROM barangays WHERE id IS NOT NULL $munquery $brgyquery")[0];
+// Use prepared statements to prevent SQL injection
+$munquery = $mun ? "AND municipality = ?" : "";
+$brgyquery2 = $brgy ? "AND barangay = ?" : "";
 
-$total_individuals = get_value("SELECT COUNT(*) 
-    FROM v_info 
-    INNER JOIN barangays ON barangays.id = v_info.barangayId 
-    WHERE record_type = 1 $munquery $brgyquery")[0];
+// Create a prepared statement
+$stmt = $conn->prepare("SELECT barangay, id FROM barangays WHERE id IS NOT NULL $munquery $brgyquery2");
 
-$total_warded = $total_individuals - get_value("SELECT COUNT(*) 
-    FROM v_info 
-    LEFT JOIN household_warding ON household_warding.mem_v_id = v_info.v_id 
-    LEFT JOIN head_household ON head_household.fh_v_id = v_info.v_id 
-    INNER JOIN barangays ON barangays.id = v_info.barangayId 
-    WHERE record_type = 1 
-    AND (household_warding.mem_v_id IS NOT NULL OR head_household.fh_v_id IS NOT NULL) $munquery $brgyquery")[0];
+// Bind parameters if they exist
+if ($mun && $brgy) {
+    $stmt->bind_param("ss", $mun, $brgy);
+} elseif ($mun) {
+    $stmt->bind_param("s", $mun);
+} elseif ($brgy) {
+    $stmt->bind_param("s", $brgy);
+}
 
-$male_warded = get_value("SELECT COUNT(*) 
-    FROM v_info 
-    LEFT JOIN household_warding ON household_warding.mem_v_id = v_info.v_id 
-    LEFT JOIN head_household ON head_household.fh_v_id = v_info.v_id 
-    INNER JOIN barangays ON barangays.id = v_info.barangayId 
-    WHERE record_type = 1 
-    AND (household_warding.mem_v_id IS NOT NULL OR head_household.fh_v_id IS NOT NULL) 
-    AND v_gender = 'M' $munquery $brgyquery")[0];
+$stmt->execute();
+$result = $stmt->get_result();
+$barangays = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
-$female_warded = get_value("SELECT COUNT(*) 
-    FROM v_info 
-    LEFT JOIN household_warding ON household_warding.mem_v_id = v_info.v_id 
-    LEFT JOIN head_household ON head_household.fh_v_id = v_info.v_id 
-    INNER JOIN barangays ON barangays.id = v_info.barangayId 
-    WHERE record_type = 1 
-    AND (household_warding.mem_v_id IS NOT NULL OR head_household.fh_v_id IS NOT NULL) 
-    AND v_gender = 'F' $munquery $brgyquery")[0];
+// Define constant values to avoid repetition
+$CONGRESSMAN_LABELS = [
+    660 => 'Laynes',
+    661 => 'Rodriguez',
+    678 => 'Alberto',
+    679 => 'Undecided',
+    null => 'Undecided'
+];
+
+$GOVERNOR_LABELS = [
+    662 => 'Bosste',
+    663 => 'Asanza',
+    680 => 'Undecided',
+    null => 'Undecided'
+];
+
+$VICEGOV_LABELS = [
+    676 => 'Fernandez',
+    677 => 'Abundo',
+    681 => 'Undecided',
+    null => 'Undecided'
+];
+
+$MAYOR_LABELS = [
+    693 => 'Boboy',
+    694 => 'Posoy',
+    695 => 'Arcilla',
+    696 => 'Undecided',
+    null => 'Undecided'
+];
+
+// Create common query components for reuse
+$politicsSelect = "CASE
+        WHEN congressman IN (660, 661, 678, 679) THEN '" . implode("' WHEN congressman = ", array_keys($CONGRESSMAN_LABELS)) . "' ELSE 'Other'
+        END AS cong,
+    CASE
+        WHEN governor IN (662, 663, 680) THEN '" . implode("' WHEN governor = ", array_keys($GOVERNOR_LABELS)) . "' ELSE 'Other'
+        END AS gov,
+    CASE
+        WHEN vicegov IN (676, 677, 681) THEN '" . implode("' WHEN vicegov = ", array_keys($VICEGOV_LABELS)) . "' ELSE 'Other'
+        END AS vgov,
+    CASE
+        WHEN mayor IN (693, 694, 695, 696) THEN '" . implode("' WHEN mayor = ", array_keys($MAYOR_LABELS)) . "' ELSE 'Other'
+        END AS mayor";
+
+// Process each barangay
+foreach ($barangays as $barangay) {
+    $brgyid = $barangay['id'];
+    $brgyname = $barangay['barangay'];
     
-
-// Calculate percentages
-$percent_warded = $total_individuals > 0 ? ($total_warded / $total_individuals) * 100 : 0;
-$percent_male = $total_warded > 0 ? ($male_warded / $total_warded) * 100 : 0;
-$percent_female = $total_warded > 0 ? ($female_warded / $total_warded) * 100 : 0;
+    // Prepare the statement once and reuse
+    $headQuery = $conn->prepare("SELECT
+        municipality,
+        barangay,
+        v_lname,
+        v_fname,
+        v_mname,
+        'Family Head' as role,
+        head_household.fh_v_id as household_id,
+        CONCAT(v_lname, ', ', v_fname, ' ', v_mname) as full_name,
+        CASE
+            WHEN congressman = 660 THEN 'Laynes'
+            WHEN congressman = 661 THEN 'Rodriguez'
+            WHEN congressman = 678 THEN 'Alberto'
+            WHEN congressman = 679 THEN 'Undecided'
+            WHEN congressman IS NULL THEN 'Undecided'
+            ELSE 'Other'
+        END AS cong,
+        CASE
+            WHEN governor = 662 THEN 'Bosste'
+            WHEN governor = 663 THEN 'Asanza'
+            WHEN governor = 680 THEN 'Undecided'
+            WHEN governor IS NULL THEN 'Undecided'
+            ELSE 'Other'
+        END AS gov, 
+        CASE
+            WHEN vicegov = 676 THEN 'Fernandez'
+            WHEN vicegov = 677 THEN 'Abundo'
+            WHEN vicegov = 681 THEN 'Undecided'
+            WHEN vicegov IS NULL THEN 'Undecided'
+            ELSE 'Other'
+        END AS vgov, 
+        CASE
+            WHEN mayor = 693 THEN 'Boboy'
+            WHEN mayor = 694 THEN 'Posoy'
+            WHEN mayor = 695 THEN 'Arcilla'
+            WHEN mayor = 696 THEN 'Undecided'
+            WHEN mayor IS NULL THEN 'Undecided'
+            ELSE 'Other'
+        END AS mayor
+    FROM head_household
+    INNER JOIN v_info ON v_info.v_id = head_household.fh_v_id
+    INNER JOIN barangays ON barangays.id = v_info.barangayId
+    LEFT JOIN politics ON politics.v_id = v_info.v_id
+    WHERE record_type = 1
+    AND barangays.id = ?
+    GROUP BY v_info.v_id
+    ORDER BY v_lname, v_mname");
+    
+    $headQuery->bind_param("i", $brgyid);
+    $headQuery->execute();
+    $headResult = $headQuery->get_result();
+    $headhouseholds = $headResult->fetch_all(MYSQLI_ASSOC);
+    $headQuery->close();
+    
+    // Prepare statement for family members (will be reused for each household)
+    $memberQuery = $conn->prepare("SELECT
+        CONCAT(v_lname, ', ', v_fname, ' ', v_mname) as full_name,
+        'Family Member' as role,
+        CASE
+            WHEN congressman = 660 THEN 'Laynes'
+            WHEN congressman = 661 THEN 'Rodriguez'
+            WHEN congressman = 678 THEN 'Alberto'
+            WHEN congressman = 679 THEN 'Undecided'
+            WHEN congressman IS NULL THEN 'Undecided'
+            ELSE 'Other'
+        END AS cong,
+        CASE
+            WHEN governor = 662 THEN 'Bosste'
+            WHEN governor = 663 THEN 'Asanza'
+            WHEN governor = 680 THEN 'Undecided'
+            WHEN governor IS NULL THEN 'Undecided'
+            ELSE 'Other'
+        END AS gov,
+        CASE
+            WHEN vicegov = 676 THEN 'Fernandez'
+            WHEN vicegov = 677 THEN 'Abundo'
+            WHEN vicegov = 681 THEN 'Undecided'
+            WHEN vicegov IS NULL THEN 'Undecided'
+            ELSE 'Other'
+        END AS vgov,
+        CASE
+            WHEN mayor = 693 THEN 'Boboy'
+            WHEN mayor = 694 THEN 'Posoy'
+            WHEN mayor = 695 THEN 'Arcilla'
+            WHEN mayor = 696 THEN 'Undecided'
+            WHEN mayor IS NULL THEN 'Undecided'
+            ELSE 'Other'
+        END AS mayor
+    FROM household_warding
+    INNER JOIN v_info ON v_info.v_id = household_warding.mem_v_id
+    LEFT JOIN politics ON politics.v_id = v_info.v_id
+    WHERE fh_v_id = ?
+    ORDER BY v_lname, v_mname");
 ?>
-
-<div class="row">
-    <div class="col-md-12">
-        <div class="card mb-4 shadow border-0">
-            <div class="card-body bg-dark text-white rounded">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h2 class="mb-2 fw-bold">
-                            <?php
-                            if ($mun) {
-                                if ($brgy) {
-                                    echo $brgyName . ', ' . $mun;
-                                } else {
-                                    echo $mun;
-                                }
-                            } else {
-                                echo "Household Survey Province-wide";
-                            }
-                            ?>
-                            - Warded Voters
-                            <pre class="text-danger">this page is under construction</pre>
-                        </h2>
-                        <button class="btn btn-sm btn-outline-success mt-2 removeonprint" data-bs-toggle="modal"
-                            data-bs-target="#municipalityModal">
-                            <i class="fa fa-repeat"></i> Select Address
-                        </button>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <button class="btn btn-sm btn-outline-primary removeonprint" id="printBtn"
-                            onclick="window.print()">
-                            <i class="fa fa-print"></i> Print Report
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <div class="col-md-6 col-lg-3 mb-3">
-        <div class="card h-100 border-left-success">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="text-xs text-uppercase text-success fw-bold">Total Warded</div>
-                    <div><i class="fa fa-user-check text-gray-300"></i></div>
-                </div>
-                <div class="h4 mb-1 fw-bold">
-                    <?php echo $total_warded . '/' . $total_individuals; ?>
-                </div>
-                <div class="progress mb-1" style="height: 6px;">
-                    <div class="progress-bar bg-success" role="progressbar"
-                        style="width: <?php echo round($percent_warded, 1); ?>%"
-                        aria-valuenow="<?php echo $total_warded; ?>" aria-valuemin="0"
-                        aria-valuemax="<?php echo $total_individuals; ?>">
-                    </div>
-                </div>
-                <div class="small text-muted">
-                    <?php echo round($percent_warded, 1); ?>% voters assigned
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-3 mb-3">
-        <div class="card h-100 border-left-primary">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="text-xs text-uppercase text-primary fw-bold">Male</div>
-                    <div><i class="fa fa-male text-gray-300"></i></div>
-                </div>
-                <div class="h4 mb-1 fw-bold">
-                    <?php echo $male_warded; ?>
-                </div>
-                <div class="progress mb-1" style="height: 6px;">
-                    <div class="progress-bar bg-primary" role="progressbar"
-                        style="width: <?php echo round($percent_male, 1); ?>%"
-                        aria-valuenow="<?php echo $male_warded; ?>" aria-valuemin="0"
-                        aria-valuemax="<?php echo $total_warded; ?>">
-                    </div>
-                </div>
-                <div class="small text-muted">
-                    <?php echo round($percent_male, 1); ?>% of warded voters
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-3 mb-3">
-        <div class="card h-100 border-left-info">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="text-xs text-uppercase text-info fw-bold">Female</div>
-                    <div><i class="fa fa-female text-gray-300"></i></div>
-                </div>
-                <div class="h4 mb-1 fw-bold">
-                    <?php echo $female_warded; ?>
-                </div>
-                <div class="progress mb-1" style="height: 6px;">
-                    <div class="progress-bar bg-info" role="progressbar"
-                        style="width: <?php echo round($percent_female, 1); ?>%"
-                        aria-valuenow="<?php echo $female_warded; ?>" aria-valuemin="0"
-                        aria-valuemax="<?php echo $total_warded; ?>">
-                    </div>
-                </div>
-                <div class="small text-muted">
-                    <?php echo round($percent_female, 1); ?>% of warded voters
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-3 mb-3">
-        <div class="card h-100 border-left-warning">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="text-xs text-uppercase text-warning fw-bold">Warded Barangays</div>
-                    <div><i class="fa fa-map-marker text-gray-300"></i></div>
-                </div>
-                <div class="h4 mb-1 fw-bold">
-                    <?php 
-                    $warded_barangays = get_value("SELECT COUNT(DISTINCT barangayId) 
-                        FROM v_info 
-                        LEFT JOIN household_warding ON household_warding.mem_v_id = v_info.v_id 
-                        LEFT JOIN head_household ON head_household.fh_v_id = v_info.v_id 
-                        INNER JOIN barangays ON barangays.id = v_info.barangayId 
-                        WHERE record_type = 1 
-                        AND (household_warding.mem_v_id IS NOT NULL OR head_household.fh_v_id IS NOT NULL) $munquery $brgyquery")[0];
-                    echo $warded_barangays . '/' . $total_barangays;
-                    $barangay_percent = $total_barangays > 0 ? ($warded_barangays / $total_barangays) * 100 : 0;
-                    ?>
-                </div>
-                <div class="progress mb-1" style="height: 6px;">
-                    <div class="progress-bar bg-warning" role="progressbar"
-                        style="width: <?php echo round($barangay_percent, 1); ?>%"
-                        aria-valuenow="<?php echo $warded_barangays; ?>" aria-valuemin="0"
-                        aria-valuemax="<?php echo $total_barangays; ?>">
-                    </div>
-                </div>
-                <div class="small text-muted">
-                    <?php echo round($barangay_percent, 1); ?>% of barangays warded
-                </div>
-            </div>
-        </div>
-    </div>
+<h3 class="mt-5"><?php echo htmlspecialchars($brgyname); ?> - Family Lists</h3>
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead class="table-primary">
+            <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Congressman</th>
+                <th>Governor</th>
+                <th>Vice Governor</th>
+                <th>Mayor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            if ($headhouseholds && count($headhouseholds) > 0) {
+                foreach ($headhouseholds as $head) {
+                    // Escape data for display
+                    $head['full_name'] = htmlspecialchars($head['full_name']);
+            ?>
+            <tr>
+                <td><strong><?php echo $head['full_name']; ?></strong></td>
+                <td><strong><?php echo $head['role']; ?></strong></td>
+                <td><?php echo $head['cong']; ?></td>
+                <td><?php echo $head['gov']; ?></td>
+                <td><?php echo $head['vgov']; ?></td>
+                <td><?php echo $head['mayor']; ?></td>
+            </tr>
+            <?php
+                    // Get family members (reuses prepared statement)
+                    $household_id = $head['household_id'];
+                    $memberQuery->bind_param("i", $household_id);
+                    $memberQuery->execute();
+                    $memberResult = $memberQuery->get_result();
+                    $familyMembers = $memberResult->fetch_all(MYSQLI_ASSOC);
+                    
+                    if ($familyMembers && count($familyMembers) > 0) {
+                        foreach ($familyMembers as $member) {
+                            // Escape data for display
+                            $member['full_name'] = htmlspecialchars($member['full_name']);
+            ?>
+            <tr>
+                <td class="ps-4"><?php echo $member['full_name']; ?></td>
+                <td><?php echo $member['role']; ?></td>
+                <td><?php echo $member['cong']; ?></td>
+                <td><?php echo $member['gov']; ?></td>
+                <td><?php echo $member['vgov']; ?></td>
+                <td><?php echo $member['mayor']; ?></td>
+            </tr>
+            <?php
+                        }
+                    } else {
+            ?>
+            <tr>
+                <td colspan="6" class="text-center">No family members found</td>
+            </tr>
+            <?php
+                    }
+                    
+                    // Add divider row between families
+                    echo '<tr class="table-secondary"><td colspan="6"></td></tr>';
+                }
+                
+                // Close the member query after all households have been processed
+                $memberQuery->close();
+            } else {
+            ?>
+            <tr>
+                <td colspan="6" class="text-center">No households found in this barangay</td>
+            </tr>
+            <?php
+            }
+            ?>
+        </tbody>
+    </table>
 </div>
 <?php
-$status_class = $percent_warded >= 80 ? 'danger' :
-               ($percent_warded >= 50 ? 'warning' :
-               ($percent_warded >= 30 ? 'info' :
-               ($percent_warded > 0 ? 'primary' : 'success')));
-
-$status_icon = $percent_warded >= 80 ? 'exclamation-circle' :
-              ($percent_warded >= 50 ? 'exclamation-triangle' :
-              ($percent_warded >= 30 ? 'info-circle' :
-              ($percent_warded > 0 ? 'thumbs-up' : 'check-circle')));
-
-$status_message = $percent_warded >= 80 ? 'Critical situation! Most voters have not been assigned to households.' :
-                ($percent_warded >= 50 ? 'Significant work needed. More than half of voters still need to be assigned.' :
-                ($percent_warded >= 30 ? 'Progress is being made, but many voters still need to be assigned to households.' :
-                ($percent_warded > 0 ? 'Good progress. Only a small percentage of voters remain to be assigned.' :
-                'Excellent! All voters have been assigned to households.')));
+}
 ?>
-
-<div class="alert alert-<?php echo $status_class; ?> mb-4">
-    <div class="d-flex align-items-center">
-        <div class="me-3">
-            <i class="fa fa-<?php echo $status_icon; ?> fa-2x"></i>
-        </div>
-        <div>
-            <h5 class="fw-bold text-<?php echo $status_class; ?> mb-1">
-                <?php echo $total_warded; ?> Voters Assigned to Households
-            </h5>
-            <div><?php echo $status_message; ?></div>
-        </div>
-    </div>
-</div>
-<div class="card mb-4">
-    <div class="card-header bg-secondary text-white fw-bold">
-        Summary of Warded Individuals per Barangay
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-bordered mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Barangay</th>
-                        <th>Total Individuals</th>
-                        <th>Warded</th>
-                        <th>Percent Warded</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $i = 1;
-                    $barangays = get_array("SELECT barangay, id FROM barangays WHERE id IS NOT NULL $munquery $brgyquery");
-                    foreach ($barangays as $barangay) {
-                        $brgyName = $barangay['barangay'];
-                        $brgyId = $barangay['id'];
-
-                        $total_individuals_brgy = get_value("SELECT COUNT(*) 
-                            FROM v_info 
-                            WHERE record_type = 1 AND barangayId = $brgyId")[0];
-
-                        $warded_brgy = get_value("SELECT COUNT(*) 
-                            FROM v_info 
-                            LEFT JOIN household_warding ON household_warding.mem_v_id = v_info.v_id 
-                            LEFT JOIN head_household ON head_household.fh_v_id = v_info.v_id 
-                            WHERE record_type = 1 
-                            AND barangayId = $brgyId 
-                            AND (household_warding.mem_v_id IS NOT NULL OR head_household.fh_v_id IS NOT NULL)")[0];
-
-                        $percent = $total_individuals_brgy > 0 ? round(($warded_brgy / $total_individuals_brgy) * 100, 1) : 0;
-
-                        // Determine status and color
-                      $status = '';
-                        $status_class = '';
-
-                        if ($percent >= 80) {
-                            $status = 'Excellent';
-                            $status_class = 'bg-success';
-                        } elseif ($percent >= 50) {
-                            $status = 'Good';
-                            $status_class = 'bg-primary';
-                        } elseif ($percent >= 30) {
-                            $status = 'Moderate';
-                            $status_class = 'bg-info';
-                        } elseif ($percent > 0) {
-                            $status = 'Low';
-                            $status_class = 'bg-warning';
-                        } else {
-                            $status = 'Critical';
-                            $status_class = 'bg-danger';
-                        }
-                        ?>
-                    <tr>
-                        <td><?php echo $i++; ?></td>
-                        <td><?php echo $brgyName; ?></td>
-                        <td><?php echo $total_individuals_brgy; ?></td>
-                        <td><?php echo $warded_brgy; ?></td>
-                        <td><?php echo $percent; ?>%</td>
-                        <td><span class="badge <?php echo $status_class; ?>"><?php echo $status; ?></span></td>
-
-                    </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <?php
-    $barangays = get_array("SELECT barangay, id FROM barangays WHERE id IS NOT NULL $munquery $brgyquery");
-    foreach ($barangays as $bkey => $bvalue) {
-        $barangay = $bvalue["barangay"];
-        $barangayid = $bvalue["id"];
-        
-        // Get count of warded individuals in this barangay
-        $brgy_warded_count = get_value("SELECT COUNT(*) 
-            FROM v_info 
-            LEFT JOIN household_warding ON household_warding.mem_v_id = v_info.v_id 
-            LEFT JOIN head_household ON head_household.fh_v_id = v_info.v_id 
-            INNER JOIN barangays ON barangays.id = v_info.barangayId 
-            WHERE record_type = 1 
-            AND (household_warding.mem_v_id IS NOT NULL OR head_household.fh_v_id IS NOT NULL) 
-            AND barangays.id = '$barangayid'")[0];
-            ?>
-
-    <?php
-        // Only show barangays with warded individuals
-        if ($brgy_warded_count > 0) {
-    ?>
-
-    <div class="col-md-12">
-        <div class="card mb-4">
-            <div class="card-header bg-secondary">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold"><?php echo $barangay; ?></h5>
-                    <span class="badge bg-success"><?php echo $brgy_warded_count; ?> Warded</span>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead class="bg-secondary">
-                            <tr>
-                                <th>#</th>
-                                <th>Fullname</th>
-                                <th>Birthday</th>
-                                <th>Gender</th>
-                                <th>Address</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $warded = get_array("SELECT
-                                v_lname, v_fname, v_mname,
-                                municipality,
-                                barangay,
-                                v_birthday,
-                                v_gender, v_info.v_id
-                            FROM
-                                v_info
-                            LEFT JOIN household_warding ON household_warding.mem_v_id = v_info.v_id
-                            LEFT JOIN head_household ON head_household.fh_v_id = v_info.v_id
-                            INNER JOIN barangays ON barangays.id = v_info.barangayId
-                            WHERE
-                                record_type = 1
-                            AND (household_warding.mem_v_id IS NOT NULL OR head_household.fh_v_id IS NOT NULL)
-                            AND barangays.id = '$barangayid'
-                            ORDER BY v_lname, v_mname ASC");
-                            foreach ($warded as $key => $value) {
-                            ?>
-                            <tr>
-                                <td><?php echo $key + 1; ?></td>
-                                <td><?php echo $value["v_lname"]; ?></td>
-                                <td><?php echo $value["v_fname"] . ' ' . $value["v_mname"]; ?></td>
-                                <td><?php echo $value["v_birthday"]; ?></td>
-                                <td><?php
-                                if($value["v_gender"] == "" || $value["v_gender"] == null){
-                                    echo "N/A";
-                                }
-                                else{
-                                    echo $value["v_gender"];
-                                }
-                                ?></td>
-                                <td><?php echo $value["barangay"] . ', ' . $value["municipality"]; ?></td>
-                            </tr>
-                            <?php
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php 
-        } // End if brgy_warded_count > 0
-    } // End foreach barangays
-    ?>
-</div>

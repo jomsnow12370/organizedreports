@@ -596,7 +596,9 @@ echo number_format($total_voters[0]);
                                     Undecided
                                 </div>
                                 <div class="h4 mb-0 fw-bold">
-                                    <?php echo number_format($mayor_totals['UndecidedMayor']['total'] + $mayor_blanks); ?>
+                                    <?php 
+                                  // echo $mayor_blanks;
+                                    echo number_format($mayor_totals['UndecidedMayor']['total'] + $mayor_blanks); ?>
                                 </div>
                             </div>
                             <div class="col-auto">

@@ -62,9 +62,29 @@ $res_household_member = mysqli_query($c, "SELECT COUNT(*) from household_warding
                                           WHERE record_type = 1  $munquery $brgyquery
                                           GROUP BY mem_v_id");
 
+                                          // // Get household counts
+$res_head_household_virac = mysqli_query($c, "SELECT COUNT(*) from head_household 
+                                        INNER JOIN v_info ON v_info.v_id = head_household.fh_v_id 
+                                        INNER JOIN barangays ON barangays.id = v_info.barangayId 
+                                        WHERE record_type = 1 AND municipality = 'VIRAC'
+                                        GROUP BY fh_v_id");
+                                        
+$res_household_member_virac = mysqli_query($c, "SELECT COUNT(*) from household_warding 
+                                          INNER JOIN v_info ON v_info.v_id = household_warding.fh_v_id 
+                                          INNER JOIN barangays ON barangays.id = v_info.barangayId 
+                                          WHERE record_type = 1 AND municipality = 'VIRAC'
+                                          GROUP BY mem_v_id");
+
+
 $head_household = mysqli_num_rows($res_head_household);
 $household_member = mysqli_num_rows($res_household_member);
+
+$head_household_virac = mysqli_num_rows($res_head_household_virac);
+$household_member_virac = mysqli_num_rows($res_household_member_virac);
+
 $household_total = $head_household + $household_member;
+
+$household_total_virac = $head_household_virac + $household_member_virac;
 
 // // Get total voters
 // // Survey data - Congressional candidates
@@ -147,5 +167,5 @@ foreach ($mayor_candidates as $candidate) {
 $cong_blanks = $household_total - $total_warding_cong;
 $gov_blanks = $household_total - $total_warding_gov;
 $vgov_blanks = $household_total - $total_warding_vgov;
-$mayor_blanks = $household_total - $total_warding_mayor;
+$mayor_blanks = $household_total_virac - $total_warding_mayor;
 ?>
