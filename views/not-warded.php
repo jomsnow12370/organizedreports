@@ -524,6 +524,9 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
         if ($brgy_not_warded_count > 0) {
     ?>
     <footer> </footer>
+    <?php if(isset($_GET["mun"]) !== ""){
+
+    ?>
     <div class="col-md-12">
         <div class="card mb-4">
             <div class="card-header bg-secondary">
@@ -591,6 +594,10 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
             </div>
         </div>
     </div>
+    <?php
+        }
+    ?>
+
     <?php 
         } // End if brgy_not_warded_count > 0
     } // End foreach barangays

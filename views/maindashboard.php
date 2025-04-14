@@ -184,9 +184,265 @@ echo number_format($total_voters[0]);
             </div>
         </div>
     </div>
-
-
-
+    <div class="row mt-4">
+        <div class="row mt-4">
+            <div class="col-lg-12">
+                <div class="card shadow border-0 mb-4">
+                    <div class="card-header bg-dark py-3">
+                        <h5 class="mb-0 fw-bold text-light">
+                            <?php if(isset($_GET["mun"]) && $_GET["mun"] != ""): ?>
+                            <?php echo $_GET["mun"]; ?> Barangay Survey Summary
+                            <?php else: ?>
+                            Municipality Survey Summary
+                            <?php endif; ?>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Status Legend -->
+                        <div class="mb-3">
+                            <span class="badge bg-danger me-2">Low (<40%)< /span>
+                                    <span class="badge bg-warning text-dark me-2">Medium (40-70%)</span>
+                                    <span class="badge bg-success me-2">High (>70%)</span>
+                        </div>
+                        <div class="table-responsive">
+                            <?php if(isset($_GET["mun"]) && $_GET["mun"] != ""): ?>
+                            <!-- Barangay Summary Table -->
+                            <?php $barangay_summary = get_barangay_summary($c, $_GET["mun"]); ?>
+                            <table class="table table-hover">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="fw-bold text-primary">Barangay</th>
+                                        <th class="fw-bold text-primary">Status</th>
+                                        <th class="fw-bold text-primary">Total Households</th>
+                                        <th class="fw-bold text-primary">Surveyed Households</th>
+                                        <th class="fw-bold text-primary">Percentage</th>
+                                        <th class="fw-bold text-primary">Household Members</th>
+                                        <th class="fw-bold text-primary">Total Surveyed</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($barangay_summary as $brgy_id => $data): ?>
+                                    <?php if ($brgy_id !== 'GRAND_TOTAL'): ?>
+                                    <tr>
+                                        <td class="fw-bold">
+                                            <a href="?mun=<?php echo urlencode($_GET["mun"]); ?>&brgy=<?php echo urlencode($brgy_id); ?>"
+                                                class="text-decoration-none">
+                                                <?php echo $data['barangay']; ?>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                        $percentage = $data['household_percentage'];
+                                        if ($percentage < 40) {
+                                            echo '<span class="badge bg-danger">Low</span>';
+                                        } elseif ($percentage >= 40 && $percentage <= 70) {
+                                            echo '<span class="badge bg-warning text-dark">Medium</span>';
+                                        } else {
+                                            echo '<span class="badge bg-success">High</span>';
+                                        }
+                                        ?>
+                                        </td>
+                                        <td><?php echo number_format($data['total_households']); ?></td>
+                                        <td><?php echo number_format($data['surveyed_households']); ?></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2"><?php echo $data['household_percentage']; ?>%</span>
+                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                    <?php 
+                                                $bg_class = "bg-success";
+                                                if ($data['household_percentage'] < 40) {
+                                                    $bg_class = "bg-danger";
+                                                } elseif ($data['household_percentage'] >= 40 && $data['household_percentage'] <= 70) {
+                                                    $bg_class = "bg-warning";
+                                                }
+                                                ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?>"
+                                                        role="progressbar"
+                                                        style="width: <?php echo $data['household_percentage']; ?>%;"
+                                                        aria-valuenow="<?php echo $data['household_percentage']; ?>"
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><?php echo number_format($data['surveyed_members']); ?></td>
+                                        <td><?php echo number_format($data['total_surveyed']); ?></td>
+                                    </tr>
+                                    <?php endif; ?>
+                                    <?php endforeach; ?>
+                                    <tr class="bg-light">
+                                        <td class="fw-bold text-uppercase">
+                                            <?php echo $barangay_summary['GRAND_TOTAL']['barangay']; ?></td>
+                                        <td>
+                                            <?php 
+                                        $percentage = $barangay_summary['GRAND_TOTAL']['household_percentage'];
+                                        if ($percentage < 40) {
+                                            echo '<span class="badge bg-danger">Low</span>';
+                                        } elseif ($percentage >= 40 && $percentage <= 70) {
+                                            echo '<span class="badge bg-warning text-dark">Medium</span>';
+                                        } else {
+                                            echo '<span class="badge bg-success">High</span>';
+                                        }
+                                        ?>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <?php echo number_format($barangay_summary['GRAND_TOTAL']['total_households']); ?>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <?php echo number_format($barangay_summary['GRAND_TOTAL']['surveyed_households']); ?>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span
+                                                    class="me-2 fw-bold"><?php echo $barangay_summary['GRAND_TOTAL']['household_percentage']; ?>%</span>
+                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                    <?php 
+                                                $bg_class = "bg-success";
+                                                if ($barangay_summary['GRAND_TOTAL']['household_percentage'] < 40) {
+                                                    $bg_class = "bg-danger";
+                                                } elseif ($barangay_summary['GRAND_TOTAL']['household_percentage'] >= 40 && $barangay_summary['GRAND_TOTAL']['household_percentage'] <= 70) {
+                                                    $bg_class = "bg-warning";
+                                                }
+                                                ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?>"
+                                                        role="progressbar"
+                                                        style="width: <?php echo $barangay_summary['GRAND_TOTAL']['household_percentage']; ?>%;"
+                                                        aria-valuenow="<?php echo $barangay_summary['GRAND_TOTAL']['household_percentage']; ?>"
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <?php echo number_format($barangay_summary['GRAND_TOTAL']['surveyed_members']); ?>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <?php echo number_format($barangay_summary['GRAND_TOTAL']['total_surveyed']); ?>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <?php else: ?>
+                            <!-- Municipality Summary Table -->
+                            <table class="table table-hover">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="fw-bold text-primary">Municipality</th>
+                                        <th class="fw-bold text-primary">Status</th>
+                                        <th class="fw-bold text-primary">Total Households</th>
+                                        <th class="fw-bold text-primary">Surveyed Households</th>
+                                        <th class="fw-bold text-primary">Percentage</th>
+                                        <th class="fw-bold text-primary">Household Members</th>
+                                        <th class="fw-bold text-primary">Total Surveyed</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($municipality_summary as $mun => $data): ?>
+                                    <?php if ($mun !== 'GRAND_TOTAL'): ?>
+                                    <tr>
+                                        <td class="fw-bold">
+                                            <a href="?mun=<?php echo urlencode($mun); ?>" class="text-decoration-none">
+                                                <?php echo $mun; ?>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                        $percentage = $data['household_percentage'];
+                                        if ($percentage < 40) {
+                                            echo '<span class="badge bg-danger">Low</span>';
+                                        } elseif ($percentage >= 40 && $percentage <= 70) {
+                                            echo '<span class="badge bg-warning text-dark">Medium</span>';
+                                        } else {
+                                            echo '<span class="badge bg-success">High</span>';
+                                        }
+                                        ?>
+                                        </td>
+                                        <td><?php echo number_format($data['total_households']); ?></td>
+                                        <td><?php echo number_format($data['surveyed_households']); ?></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span class="me-2"><?php echo $data['household_percentage']; ?>%</span>
+                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                    <?php 
+                                                $bg_class = "bg-success";
+                                                if ($data['household_percentage'] < 40) {
+                                                    $bg_class = "bg-danger";
+                                                } elseif ($data['household_percentage'] >= 40 && $data['household_percentage'] <= 70) {
+                                                    $bg_class = "bg-warning";
+                                                }
+                                                ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?>"
+                                                        role="progressbar"
+                                                        style="width: <?php echo $data['household_percentage']; ?>%;"
+                                                        aria-valuenow="<?php echo $data['household_percentage']; ?>"
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><?php echo number_format($data['surveyed_members']); ?></td>
+                                        <td><?php echo number_format($data['total_surveyed']); ?></td>
+                                    </tr>
+                                    <?php endif; ?>
+                                    <?php endforeach; ?>
+                                    <tr class="bg-light">
+                                        <td class="fw-bold text-uppercase">Grand Total</td>
+                                        <td>
+                                            <?php 
+                                        $percentage = $municipality_summary['GRAND_TOTAL']['household_percentage'];
+                                        if ($percentage < 40) {
+                                            echo '<span class="badge bg-danger">Low</span>';
+                                        } elseif ($percentage >= 40 && $percentage <= 70) {
+                                            echo '<span class="badge bg-warning text-dark">Medium</span>';
+                                        } else {
+                                            echo '<span class="badge bg-success">High</span>';
+                                        }
+                                        ?>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <?php echo number_format($municipality_summary['GRAND_TOTAL']['total_households']); ?>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <?php echo number_format($municipality_summary['GRAND_TOTAL']['surveyed_households']); ?>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <span
+                                                    class="me-2 fw-bold"><?php echo $municipality_summary['GRAND_TOTAL']['household_percentage']; ?>%</span>
+                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                    <?php 
+                                                $bg_class = "bg-success";
+                                                if ($municipality_summary['GRAND_TOTAL']['household_percentage'] < 40) {
+                                                    $bg_class = "bg-danger";
+                                                } elseif ($municipality_summary['GRAND_TOTAL']['household_percentage'] >= 40 && $municipality_summary['GRAND_TOTAL']['household_percentage'] <= 70) {
+                                                    $bg_class = "bg-warning";
+                                                }
+                                                ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?>"
+                                                        role="progressbar"
+                                                        style="width: <?php echo $municipality_summary['GRAND_TOTAL']['household_percentage']; ?>%;"
+                                                        aria-valuenow="<?php echo $municipality_summary['GRAND_TOTAL']['household_percentage']; ?>"
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <?php echo number_format($municipality_summary['GRAND_TOTAL']['surveyed_members']); ?>
+                                        </td>
+                                        <td class="fw-bold">
+                                            <?php echo number_format($municipality_summary['GRAND_TOTAL']['total_surveyed']); ?>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Leaders Summary Card -->
 
 </div>
@@ -215,12 +471,12 @@ echo number_format($total_voters[0]);
                                       echo number_format($cong_totals['Laynes']['total']); 
                                     ?>
                                 </div>
-                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                <!-- <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
                                     title="Calculation: 60% of total Laynes supporters">
                                     <i>
                                         <?php echo number_format($sixty_percent_laynes); ?> Predicted votes
                                     </i>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-auto">
                                 <img src="assets/images/sammy.jpg" alt="Profile" class="profile-img">
@@ -246,7 +502,7 @@ echo number_format($total_voters[0]);
                                     echo number_format($cong_totals['Rodriguez']['total']); 
                                     ?>
                                 </div>
-                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                <!-- <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
                                     title="Calculation: (40% of the total Laynes Supporters) + total Rodriguez + undecided">
                                     <i>
                                         <?php 
@@ -254,7 +510,7 @@ echo number_format($total_voters[0]);
                                         ?>
                                         Predicted votes
                                     </i>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-auto">
                                 <img src="assets/images/leo.jpg" alt="Profile" class="profile-img">
@@ -334,12 +590,12 @@ echo number_format($total_voters[0]);
                                     echo number_format($gov_totals['Bosste']['total']);
                                      ?>
                                 </div>
-                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                <!-- <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
                                     title="Calculation: 60% of total Boss Te supporters">
                                     <i>
                                         <?php echo number_format($sixty_percent_bosste); ?> Predicted votes
                                     </i>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-auto">
                                 <img src="assets/images/bosste.jpg" alt="Profile" class="profile-img">
@@ -363,13 +619,13 @@ echo number_format($total_voters[0]);
                                     $total_asanza = $gov_totals['Asanza']['total'];
                                     echo number_format($gov_totals['Asanza']['total']); ?>
                                 </div>
-                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                <!-- <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
                                     title="Calculation: 40% from total of Boss Te + total Asanza + undecided">
                                     <i>
                                         <?php echo number_format($forty_percent_bosste + $total_asanza + $gov_totals['UndecidedGov']['total'] + $gov_blanks); ?>
                                         Predicted votes
                                     </i>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-auto">
                                 <img src="assets/images/asanza.jpg" alt="Profile" class="profile-img">
@@ -426,12 +682,12 @@ echo number_format($total_voters[0]);
                                     $sixty_percent_fernandez = round($total_fernandez * 0.6);
                                     echo number_format($vgov_totals['Fernandez']['total']); ?>
                                 </div>
-                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                <!-- <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
                                     title="Calculation: 60% of total Fernandez supporters">
                                     <i>
                                         <?php echo number_format($sixty_percent_fernandez); ?> Predicted votes
                                     </i>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-auto">
                                 <img src="assets/images/obet.jpg" alt="Profile" class="profile-img">
@@ -455,13 +711,13 @@ echo number_format($total_voters[0]);
                                      $total_abundo = $vgov_totals['Abundo']['total'];
                                     echo number_format($vgov_totals['Abundo']['total']); ?>
                                 </div>
-                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                <!-- <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
                                     title="Calculation: 40% from total of Fernandez + total Abundo + undecided">
                                     <i>
                                         <?php echo number_format($forty_percent_fernandez + $total_abundo + $vgov_totals['UndecidedVGov']['total'] + $vgov_blanks); ?>
                                         Predicted votes
                                     </i>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-auto">
                                 <img src="assets/images/abundo.jpg" alt="Profile" class="profile-img">
@@ -520,12 +776,12 @@ echo number_format($total_voters[0]);
                                     $sixty_percent_boboy = round($total_boboy * 0.6);
                                     echo number_format($mayor_totals['BossGov']['total']); ?>
                                 </div>
-                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                <!-- <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
                                     title="Calculation: 60% of total Cua supporters">
                                     <i>
                                         <?php echo number_format($sixty_percent_boboy); ?> Predicted votes
                                     </i>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-auto">
                                 <img src="assets/images/bossgov.jpg" alt="Profile" class="profile-img">
@@ -549,13 +805,13 @@ echo number_format($total_voters[0]);
                                      $total_posoy = $mayor_totals['Posoy']['total'];
                                     echo number_format($mayor_totals['Posoy']['total']); ?>
                                 </div>
-                                <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
+                                <!-- <div style="font-size: smaller;" class="text-muted" data-toggle="tooltip"
                                     title="Calculation: 40% from total of Cua + total Posoy + undecided">
                                     <i>
                                         <?php echo number_format($forty_percent_boboy + $total_posoy + $mayor_totals['UndecidedMayor']['total'] + $vgov_blanks); ?>
                                         Predicted votes
                                     </i>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="col-auto">
                                 <img src="assets/images/posoyhaha.jpg" alt="Profile" class="profile-img">

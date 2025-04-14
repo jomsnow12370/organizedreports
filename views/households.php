@@ -731,6 +731,7 @@ foreach ($familyheads as $family) {
         <tr>
             <th>#</th>
             <th>Name</th>
+            <th>Barangay</th>
             <th>Role</th>
             <th>Congressman</th>
             <th>Governor</th>
@@ -750,6 +751,8 @@ foreach ($familyheads as $family) {
         <tr>
             <td>1</td>
             <td><?php echo $family['full_name']; ?></td>
+
+            <td><?php echo $family['barangay']; ?></td>
             <td>Family Head</td>
             <td><?php echo $family['cong']; ?></td>
             <td><?php echo $family['gov']; ?></td>
@@ -772,7 +775,9 @@ foreach ($familyheads as $family) {
         <tr>
             <td><?php echo $row_count++; ?></td>
             <td><?php echo $member['full_name']; ?></td>
+            <td><?php echo $member['barangay']; ?></td>
             <td>Member</td>
+
             <td><?php echo $member['cong']; ?></td>
             <td><?php echo $member['gov']; ?></td>
             <td><?php echo $member['vgov']; ?></td>
