@@ -199,7 +199,9 @@ $status_message = $barangay_submission_percent >= 80 ? 'Excellent progress! Most
 <!-- Data Table -->
 <div class="card mb-4">
     <div class="card-header bg-dark py-3">
-        <h5 class="mb-0 fw-bold">Barangay Submission Report</h5>
+        <h5 class="mb-0 fw-bold">
+            <?php echo isset($_GET["mun"]) ? "Barangay Submission Report" : "Municipal Submission Report"; ?>
+        </h5>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -208,8 +210,8 @@ $status_message = $barangay_submission_percent >= 80 ? 'Excellent progress! Most
                     <tr>
                         <th>#</th>
                         <th>Municipality</th>
-                        <th>Barangay</th>
-                        <th>Voters</th>
+                        <th>Total Barangays</th>
+                        <th><?php echo isset($_GET["mun"]) ? "Voters" : "Submitted"; ?></th>
                         <th>Households</th>
                         <th>Completion</th>
                         <th>Status</th>
@@ -217,52 +219,153 @@ $status_message = $barangay_submission_percent >= 80 ? 'Excellent progress! Most
                 </thead>
                 <tbody>
                     <?php
-                    $table_total_households = 0;
-                    $table_submitted_households = 0;
+    $table_total_households = 0;
+    $table_submitted_households = 0;
+    
+    if (!isset($_GET["mun"])) {
+        // Municipality level report - Get DISTINCT municipalities
+        $municipalities = get_array("SELECT DISTINCT municipality FROM barangays WHERE id IS NOT NULL ORDER BY municipality");
+        
+        foreach ($municipalities as $key => $mun_data) {
+            $mun_name = $mun_data[0];
+            
+            // Get all barangays in this municipality
+            $mun_barangays = get_array("SELECT id FROM barangays WHERE municipality = '$mun_name'");
+            $total_mun_barangays = count($mun_barangays);
+            $submitted_mun_barangays = 0;
+            
+            // Get household data for this municipality
+            $mun_total_households = get_value("SELECT SUM(households) FROM barangays WHERE municipality = '$mun_name'")[0];
+            $table_total_households += intval($mun_total_households);
+            
+            $mun_submitted_households = 0;
+            $mun_brgyids = array();
+            
+            // Collect all barangay IDs for this municipality
+            foreach ($mun_barangays as $brgy) {
+                $mun_brgyids[] = $brgy[0];
+            }
+            
+            // If there are barangays in this municipality
+            if (!empty($mun_brgyids)) {
+                $brgyids_str = "'" . implode("','", $mun_brgyids) . "'";
+                
+                // Count submitted households in a single query
+                $wardedhouseholds_data = get_array("SELECT barangayId, COUNT(*) as count FROM head_household
+                    INNER JOIN v_info ON v_info.v_id = head_household.fh_v_id
+                    INNER JOIN barangays ON barangays.id = v_info.barangayId
+                    WHERE v_info.record_type = 1 AND barangayId IN ($brgyids_str)
+                    GROUP BY barangayId");
+                
+                // Sum up all submitted households
+                foreach ($wardedhouseholds_data as $whdata) {
+                    $mun_submitted_households += intval($whdata[1]);
                     
-                    foreach ($r as $key => $value) {
-                        $brgyid = $value[2];
-                        $brgy_total_households = intval($value[1]);
-                        $table_total_households += $brgy_total_households;
-                        
-                        // Get submitted households for this barangay
-                        $wardedhouseholds = get_value("SELECT COUNT(*) FROM head_household
-                            INNER JOIN v_info ON v_info.v_id = head_household.fh_v_id
-                            INNER JOIN barangays ON barangays.id = v_info.barangayId
-                            WHERE v_info.record_type = 1 AND barangayId = '$brgyid'")[0];
-                        
-                        $brgy_submitted_households = intval($wardedhouseholds);
-                        $table_submitted_households += $brgy_submitted_households;
-                        
-                        // Get voter information
-                        $voters = get_value("SELECT COUNT(*),municipality FROM v_info
-                            INNER JOIN barangays ON barangays.id = v_info.barangayId
-                            WHERE record_type = 1 AND barangayId = '$brgyid'");
-                        
-                        // Calculate completion percentage
-                        $completion_percent = $brgy_total_households > 0 ? 
-                            round(($brgy_submitted_households / $brgy_total_households) * 100, 0) : 0;
-                        
-                        // Determine status
-$status_class = "";
-$status_text = "";
-if ($brgy_submitted_households == 0) {
-    $status_class = "danger";
-    $status_text = "No Submissions";
-} elseif ($completion_percent < 30) {
-    $status_class = "warning";
-    $status_text = "Low Submissions";
-} elseif ($completion_percent < 50) {
-    $status_class = "info";
-    $status_text = "Partially Submitted";
-} elseif ($completion_percent < 80) {
-    $status_class = "primary";
-    $status_text = "Mostly Submitted";
-} else {
-    $status_class = "success";
-    $status_text = "Fully Submitted";
-}
-                    ?>
+                    // If this barangay has submissions, increment the counter
+                    if (intval($whdata[1]) > 0) {
+                        $submitted_mun_barangays++;
+                    }
+                }
+            }
+            
+            $table_submitted_households += $mun_submitted_households;
+            
+            // Calculate completion percentage
+            $completion_percent = $mun_total_households > 0 ? 
+                round(($mun_submitted_households / $mun_total_households) * 100, 0) : 0;
+            
+            // Determine status
+            $status_class = "";
+            $status_text = "";
+            if ($mun_submitted_households == 0) {
+                $status_class = "danger";
+                $status_text = "No Submissions";
+            } elseif ($completion_percent < 30) {
+                $status_class = "warning";
+                $status_text = "Low Submissions";
+            } elseif ($completion_percent < 50) {
+                $status_class = "info";
+                $status_text = "Partially Submitted";
+            } elseif ($completion_percent < 80) {
+                $status_class = "primary";
+                $status_text = "Mostly Submitted";
+            } else {
+                $status_class = "success";
+                $status_text = "Fully Submitted";
+            }
+            ?>
+                    <tr class="<?php echo $mun_submitted_households == 0 ? "table-danger" : ""; ?>">
+                        <td><?php echo $key + 1; ?></td>
+                        <td><?php echo $mun_name; ?></td>
+                        <td><?php echo $total_mun_barangays; ?></td>
+                        <td><?php echo $submitted_mun_barangays; ?></td>
+                        <td><?php echo $mun_submitted_households . '/' . $mun_total_households; ?></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                    <div class="progress-bar bg-<?php echo $status_class; ?>" role="progressbar"
+                                        style="width: <?php echo $completion_percent; ?>%"
+                                        aria-valuenow="<?php echo $completion_percent; ?>" aria-valuemin="0"
+                                        aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <span class="text-muted small"><?php echo $completion_percent; ?>%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-<?php echo $status_class; ?>">
+                                <?php echo $status_text; ?>
+                            </span>
+                        </td>
+                    </tr>
+                    <?php
+        }
+    } else {
+        // Original barangay-level code...
+        // Barangay level report (existing code)
+        foreach ($r as $key => $value) {
+            $brgyid = $value[2];
+            $brgy_total_households = intval($value[1]);
+            $table_total_households += $brgy_total_households;
+            
+            // Get submitted households for this barangay
+            $wardedhouseholds = get_value("SELECT COUNT(*) FROM head_household
+                INNER JOIN v_info ON v_info.v_id = head_household.fh_v_id
+                INNER JOIN barangays ON barangays.id = v_info.barangayId
+                WHERE v_info.record_type = 1 AND barangayId = '$brgyid'")[0];
+            
+            $brgy_submitted_households = intval($wardedhouseholds);
+            $table_submitted_households += $brgy_submitted_households;
+            
+            // Get voter information
+            $voters = get_value("SELECT COUNT(*),municipality FROM v_info
+                INNER JOIN barangays ON barangays.id = v_info.barangayId
+                WHERE record_type = 1 AND barangayId = '$brgyid'");
+            
+            // Calculate completion percentage
+            $completion_percent = $brgy_total_households > 0 ? 
+                round(($brgy_submitted_households / $brgy_total_households) * 100, 0) : 0;
+            
+            // Determine status
+            $status_class = "";
+            $status_text = "";
+            if ($brgy_submitted_households == 0) {
+                $status_class = "danger";
+                $status_text = "No Submissions";
+            } elseif ($completion_percent < 30) {
+                $status_class = "warning";
+                $status_text = "Low Submissions";
+            } elseif ($completion_percent < 50) {
+                $status_class = "info";
+                $status_text = "Partially Submitted";
+            } elseif ($completion_percent < 80) {
+                $status_class = "primary";
+                $status_text = "Mostly Submitted";
+            } else {
+                $status_class = "success";
+                $status_text = "Fully Submitted";
+            }
+            ?>
                     <tr class="<?php echo $brgy_submitted_households == 0 ? "table-danger" : ""; ?>">
                         <td><?php echo $key + 1; ?></td>
                         <td><?php echo $voters[1]; ?></td>
@@ -288,16 +391,17 @@ if ($brgy_submitted_households == 0) {
                         </td>
                     </tr>
                     <?php
-                    }
-                    
-                    // Update totals if needed
-                    if ($table_total_households != $total_households || $table_submitted_households != $submitted_households) {
-                        $total_households = $table_total_households;
-                        $submitted_households = $table_submitted_households;
-                        $household_submission_percent = $total_households > 0 ? 
-                            ($submitted_households / $total_households) * 100 : 0;
-                    }
-                    ?>
+        }
+    }
+    
+    // Update totals if needed
+    if ($table_total_households != $total_households || $table_submitted_households != $submitted_households) {
+        $total_households = $table_total_households;
+        $submitted_households = $table_submitted_households;
+        $household_submission_percent = $total_households > 0 ? 
+            ($submitted_households / $total_households) * 100 : 0;
+    }
+    ?>
                 </tbody>
                 <tfoot>
                     <tr class="fw-bold bg-light">

@@ -145,7 +145,7 @@ echo number_format($total_voters[0]);
                 </div>
 
                 <div class="text-center mb-2">
-                    <span class="badge bg-success fs-6 px-3 py-2"><?php echo round($warded_percent, 1); ?>%
+                    <span class="badge bg-success fs-6 px-3 py-2"><?php echo round($warded_percent, 2); ?>%
                         Warded</span>
                 </div>
 
@@ -172,14 +172,23 @@ echo number_format($total_voters[0]);
 
                 <div class="text-center mb-3">
                     <span class="fw-bold display-6 text-warning">
-                        <?php echo number_format($household_total); ?>
+                        <?php 
+                        $warding_percentage = round(($household_total / $total_voters[0]) * 100, 2);
+                        echo number_format($household_total); 
+                        ?>
                     </span>
                 </div>
 
-                <div class="text-center">
-                    <span class="badge bg-warning fs-6 px-3 py-2">
+                <div class="text-center mb-2">
+                    <span class="badge bg-warning fs-6 px-3 py-2"><?php echo $warding_percentage; ?>%
                         Warded Voters
                     </span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-warning" role="progressbar"
+                        style="width: <?php echo $warding_percentage; ?>%;"
+                        aria-valuenow="<?php echo $warding_percentage; ?>" aria-valuemin="0" aria-valuemax="100">
+                    </div>
                 </div>
             </div>
         </div>
@@ -200,7 +209,7 @@ echo number_format($total_voters[0]);
                     <div class="card-body">
                         <!-- Status Legend -->
                         <div class="mb-3">
-                            <span class="badge bg-danger me-2">Low (<40%)< /span>
+                            <span class="badge bg-danger me-2">Low (< 40%)</span>
                                     <span class="badge bg-warning text-dark me-2">Medium (40-70%)</span>
                                     <span class="badge bg-success me-2">High (>70%)</span>
                         </div>
@@ -215,9 +224,12 @@ echo number_format($total_voters[0]);
                                         <th class="fw-bold text-primary">Status</th>
                                         <th class="fw-bold text-primary">Total Households</th>
                                         <th class="fw-bold text-primary">Surveyed Households</th>
-                                        <th class="fw-bold text-primary">Percentage</th>
+
                                         <th class="fw-bold text-primary">Household Members</th>
                                         <th class="fw-bold text-primary">Total Surveyed</th>
+                                        <th class="fw-bold text-primary">Household Percentage</th>
+                                        <th class="fw-bold text-primary">Total Voters</th>
+                                        <th class="fw-bold text-primary">Warded Percentage</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -231,58 +243,89 @@ echo number_format($total_voters[0]);
                                             </a>
                                         </td>
                                         <td>
-                                            <?php 
-                                        $percentage = $data['household_percentage'];
-                                        if ($percentage < 40) {
-                                            echo '<span class="badge bg-danger">Low</span>';
-                                        } elseif ($percentage >= 40 && $percentage <= 70) {
-                                            echo '<span class="badge bg-warning text-dark">Medium</span>';
-                                        } else {
-                                            echo '<span class="badge bg-success">High</span>';
-                                        }
-                                        ?>
+                                            <?php
+                                            $percentage = $data['household_percentage'];
+                                            if ($percentage < 40) {
+                                                echo '<span class="badge bg-danger">Low</span>';
+                                            } elseif ($percentage >= 40 && $percentage <= 70) {
+                                                echo '<span class="badge bg-warning text-dark">Medium</span>';
+                                            } else {
+                                                echo '<span class="badge bg-success">High</span>';
+                                            }
+                                            ?>
                                         </td>
                                         <td><?php echo number_format($data['total_households']); ?></td>
                                         <td><?php echo number_format($data['surveyed_households']); ?></td>
+                                        <td><?php echo number_format($data['surveyed_members']); ?></td>
+                                        <td><?php echo number_format($data['total_surveyed']); ?></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <span class="me-2"><?php echo $data['household_percentage']; ?>%</span>
-                                                <div class="progress flex-grow-1" style="height: 6px;">
-                                                    <?php 
-                                                $bg_class = "bg-success";
-                                                if ($data['household_percentage'] < 40) {
-                                                    $bg_class = "bg-danger";
-                                                } elseif ($data['household_percentage'] >= 40 && $data['household_percentage'] <= 70) {
-                                                    $bg_class = "bg-warning";
-                                                }
-                                                ?>
-                                                    <div class="progress-bar <?php echo $bg_class; ?>"
+                                                <div class="progress flex-grow-1" style="height: 20px;">
+                                                    <?php
+                                                    $bg_class = "bg-success";
+                                                    if ($data['household_percentage'] < 40) {
+                                                        $bg_class = "bg-danger";
+                                                    } elseif ($data['household_percentage'] >= 40 && $data['household_percentage'] <= 70) {
+                                                        $bg_class = "bg-warning";
+                                                    }
+                                                    ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?> position-relative"
                                                         role="progressbar"
                                                         style="width: <?php echo $data['household_percentage']; ?>%;"
                                                         aria-valuenow="<?php echo $data['household_percentage']; ?>"
                                                         aria-valuemin="0" aria-valuemax="100">
+                                                        <span class="position-absolute w-100 text-center fw-bold"
+                                                            style="left: 0; color: <?php echo ($data['household_percentage'] < 40) ? 'white' : ((in_array($bg_class, ['bg-warning']) && $data['household_percentage'] < 80) ? 'black' : 'white'); ?>">
+                                                            <?php echo $data['household_percentage']; ?>%
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td><?php echo number_format($data['surveyed_members']); ?></td>
-                                        <td><?php echo number_format($data['total_surveyed']); ?></td>
+                                        <td>
+                                            <?php echo number_format($data["total_voters"]); ?>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1" style="height: 20px;">
+                                                    <?php
+                                                    $bg_class = "bg-success";
+                                                    if ($data['warded_percentage'] < 40) {
+                                                        $bg_class = "bg-danger";
+                                                    } elseif ($data['warded_percentage'] >= 40 && $data['warded_percentage'] <= 70) {
+                                                        $bg_class = "bg-warning";
+                                                    }
+                                                    ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?> position-relative"
+                                                        role="progressbar"
+                                                        style="width: <?php echo $data['warded_percentage']; ?>%;"
+                                                        aria-valuenow="<?php echo $data['warded_percentage']; ?>"
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                        <span class="position-absolute w-100 text-center fw-bold"
+                                                            style="left: 0; color: <?php echo ($data['warded_percentage'] < 40) ? 'white' : ((in_array($bg_class, ['bg-warning']) && $data['warded_percentage'] < 80) ? 'black' : 'white'); ?>">
+                                                            <?php echo $data['warded_percentage']; ?>%
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
                                     </tr>
                                     <?php endif; ?>
                                     <?php endforeach; ?>
                                     <tr class="bg-light">
                                         <td class="fw-bold text-uppercase">
-                                            <?php echo $barangay_summary['GRAND_TOTAL']['barangay']; ?></td>
+                                            <?php echo $barangay_summary['GRAND_TOTAL']['barangay']; ?>
+                                        </td>
                                         <td>
-                                            <?php 
-                                        $percentage = $barangay_summary['GRAND_TOTAL']['household_percentage'];
-                                        if ($percentage < 40) {
-                                            echo '<span class="badge bg-danger">Low</span>';
-                                        } elseif ($percentage >= 40 && $percentage <= 70) {
-                                            echo '<span class="badge bg-warning text-dark">Medium</span>';
-                                        } else {
-                                            echo '<span class="badge bg-success">High</span>';
-                                        }
+                                            <?php
+                                        // $percentage = $barangay_summary['GRAND_TOTAL']['household_percentage'];
+                                        // if ($percentage < 40) {
+                                        //     echo '<span class="badge bg-danger">Low</span>';
+                                        // } elseif ($percentage >= 40 && $percentage <= 70) {
+                                        //     echo '<span class="badge bg-warning text-dark">Medium</span>';
+                                        // } else {
+                                        //     echo '<span class="badge bg-success">High</span>';
+                                        // }
                                         ?>
                                         </td>
                                         <td class="fw-bold">
@@ -291,33 +334,63 @@ echo number_format($total_voters[0]);
                                         <td class="fw-bold">
                                             <?php echo number_format($barangay_summary['GRAND_TOTAL']['surveyed_households']); ?>
                                         </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <span
-                                                    class="me-2 fw-bold"><?php echo $barangay_summary['GRAND_TOTAL']['household_percentage']; ?>%</span>
-                                                <div class="progress flex-grow-1" style="height: 6px;">
-                                                    <?php 
-                                                $bg_class = "bg-success";
-                                                if ($barangay_summary['GRAND_TOTAL']['household_percentage'] < 40) {
-                                                    $bg_class = "bg-danger";
-                                                } elseif ($barangay_summary['GRAND_TOTAL']['household_percentage'] >= 40 && $barangay_summary['GRAND_TOTAL']['household_percentage'] <= 70) {
-                                                    $bg_class = "bg-warning";
-                                                }
-                                                ?>
-                                                    <div class="progress-bar <?php echo $bg_class; ?>"
-                                                        role="progressbar"
-                                                        style="width: <?php echo $barangay_summary['GRAND_TOTAL']['household_percentage']; ?>%;"
-                                                        aria-valuenow="<?php echo $barangay_summary['GRAND_TOTAL']['household_percentage']; ?>"
-                                                        aria-valuemin="0" aria-valuemax="100">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
                                         <td class="fw-bold">
                                             <?php echo number_format($barangay_summary['GRAND_TOTAL']['surveyed_members']); ?>
                                         </td>
                                         <td class="fw-bold">
                                             <?php echo number_format($barangay_summary['GRAND_TOTAL']['total_surveyed']); ?>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1" style="height: 20px;">
+                                                    <?php
+                                                    $bg_class = "bg-success";
+                                                    if ($barangay_summary['GRAND_TOTAL']['household_percentage'] < 40) {
+                                                        $bg_class = "bg-danger";
+                                                    } elseif ($barangay_summary['GRAND_TOTAL']['household_percentage'] >= 40 && $barangay_summary['GRAND_TOTAL']['household_percentage'] <= 70) {
+                                                        $bg_class = "bg-warning";
+                                                    }
+                                                    ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?> position-relative"
+                                                        role="progressbar"
+                                                        style="width: <?php echo $barangay_summary['GRAND_TOTAL']['household_percentage']; ?>%;"
+                                                        aria-valuenow="<?php echo $barangay_summary['GRAND_TOTAL']['household_percentage']; ?>"
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                        <span class="position-absolute w-100 text-center fw-bold"
+                                                            style="left: 0; color: <?php echo ($barangay_summary['GRAND_TOTAL']['household_percentage'] < 40) ? 'white' : ((in_array($bg_class, ['bg-warning']) && $barangay_summary['GRAND_TOTAL']['household_percentage'] < 80) ? 'black' : 'white'); ?>">
+                                                            <?php echo $barangay_summary['GRAND_TOTAL']['household_percentage']; ?>%
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <!-- total voters -->
+                                            <?php echo $total_voters[0];?>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1" style="height: 20px;">
+                                                    <?php
+                                                    $bg_class = "bg-success";
+                                                    if ($barangay_summary['GRAND_TOTAL']['warded_percentage'] < 40) {
+                                                        $bg_class = "bg-danger";
+                                                    } elseif ($barangay_summary['GRAND_TOTAL']['warded_percentage'] >= 40 && $barangay_summary['GRAND_TOTAL']['warded_percentage'] <= 70) {
+                                                        $bg_class = "bg-warning";
+                                                    }
+                                                    ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?> position-relative"
+                                                        role="progressbar"
+                                                        style="width: <?php echo $barangay_summary['GRAND_TOTAL']['warded_percentage']; ?>%;"
+                                                        aria-valuenow="<?php echo $barangay_summary['GRAND_TOTAL']['warded_percentage']; ?>"
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                        <span class="position-absolute w-100 text-center fw-bold"
+                                                            style="left: 0; color: <?php echo ($barangay_summary['GRAND_TOTAL']['warded_percentage'] < 40) ? 'white' : ((in_array($bg_class, ['bg-warning']) && $barangay_summary['GRAND_TOTAL']['warded_percentage'] < 80) ? 'black' : 'white'); ?>">
+                                                            <?php echo $barangay_summary['GRAND_TOTAL']['warded_percentage']; ?>%
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -331,9 +404,11 @@ echo number_format($total_voters[0]);
                                         <th class="fw-bold text-primary">Status</th>
                                         <th class="fw-bold text-primary">Total Households</th>
                                         <th class="fw-bold text-primary">Surveyed Households</th>
-                                        <th class="fw-bold text-primary">Percentage</th>
                                         <th class="fw-bold text-primary">Household Members</th>
                                         <th class="fw-bold text-primary">Total Surveyed</th>
+                                        <th class="fw-bold text-primary">Household Percentage</th>
+                                        <th class="fw-bold text-primary">Total Voters</th>
+                                        <th class="fw-bold text-primary">Warding Percentage</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -347,93 +422,76 @@ echo number_format($total_voters[0]);
                                         </td>
                                         <td>
                                             <?php 
-                                        $percentage = $data['household_percentage'];
-                                        if ($percentage < 40) {
-                                            echo '<span class="badge bg-danger">Low</span>';
-                                        } elseif ($percentage >= 40 && $percentage <= 70) {
-                                            echo '<span class="badge bg-warning text-dark">Medium</span>';
-                                        } else {
-                                            echo '<span class="badge bg-success">High</span>';
-                                        }
-                                        ?>
+                                            $percentage = $data['household_percentage'];
+                                            if ($percentage < 40) {
+                                                echo '<span class="badge bg-danger">Low</span>';
+                                            } elseif ($percentage >= 40 && $percentage <= 70) {
+                                                echo '<span class="badge bg-warning text-dark">Medium</span>';
+                                            } else {
+                                                echo '<span class="badge bg-success">High</span>';
+                                            }
+                                            ?>
                                         </td>
                                         <td><?php echo number_format($data['total_households']); ?></td>
                                         <td><?php echo number_format($data['surveyed_households']); ?></td>
+                                        <td><?php echo number_format($data['surveyed_members']); ?></td>
+                                        <td><?php echo number_format($data['total_surveyed']); ?></td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <span class="me-2"><?php echo $data['household_percentage']; ?>%</span>
-                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                <div class="progress flex-grow-1" style="height: 20px;">
                                                     <?php 
-                                                $bg_class = "bg-success";
-                                                if ($data['household_percentage'] < 40) {
-                                                    $bg_class = "bg-danger";
-                                                } elseif ($data['household_percentage'] >= 40 && $data['household_percentage'] <= 70) {
-                                                    $bg_class = "bg-warning";
-                                                }
-                                                ?>
-                                                    <div class="progress-bar <?php echo $bg_class; ?>"
+                                                        $bg_class = "bg-success";
+                                                        if ($data['household_percentage'] < 40) {
+                                                            $bg_class = "bg-danger";
+                                                        } elseif ($data['household_percentage'] >= 40 && $data['household_percentage'] <= 70) {
+                                                            $bg_class = "bg-warning";
+                                                        }
+                                                        ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?> position-relative"
                                                         role="progressbar"
                                                         style="width: <?php echo $data['household_percentage']; ?>%;"
                                                         aria-valuenow="<?php echo $data['household_percentage']; ?>"
                                                         aria-valuemin="0" aria-valuemax="100">
+                                                        <span class="position-absolute w-100 text-center fw-bold"
+                                                            style="left: 0; color: <?php echo ($data['household_percentage'] < 40) ? 'white' : ((in_array($bg_class, ['bg-warning']) && $data['household_percentage'] < 80) ? 'black' : 'white'); ?>">
+                                                            <?php echo $data['household_percentage']; ?>%
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td><?php echo number_format($data['surveyed_members']); ?></td>
-                                        <td><?php echo number_format($data['total_surveyed']); ?></td>
-                                    </tr>
-                                    <?php endif; ?>
-                                    <?php endforeach; ?>
-                                    <tr class="bg-light">
-                                        <td class="fw-bold text-uppercase">Grand Total</td>
                                         <td>
-                                            <?php 
-                                        $percentage = $municipality_summary['GRAND_TOTAL']['household_percentage'];
-                                        if ($percentage < 40) {
-                                            echo '<span class="badge bg-danger">Low</span>';
-                                        } elseif ($percentage >= 40 && $percentage <= 70) {
-                                            echo '<span class="badge bg-warning text-dark">Medium</span>';
-                                        } else {
-                                            echo '<span class="badge bg-success">High</span>';
-                                        }
-                                        ?>
-                                        </td>
-                                        <td class="fw-bold">
-                                            <?php echo number_format($municipality_summary['GRAND_TOTAL']['total_households']); ?>
-                                        </td>
-                                        <td class="fw-bold">
-                                            <?php echo number_format($municipality_summary['GRAND_TOTAL']['surveyed_households']); ?>
+                                            <!-- total voters -->
+                                            <?php echo number_format($data['total_voters']); ?>
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <span
-                                                    class="me-2 fw-bold"><?php echo $municipality_summary['GRAND_TOTAL']['household_percentage']; ?>%</span>
-                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                <div class="progress flex-grow-1" style="height: 20px;">
                                                     <?php 
-                                                $bg_class = "bg-success";
-                                                if ($municipality_summary['GRAND_TOTAL']['household_percentage'] < 40) {
-                                                    $bg_class = "bg-danger";
-                                                } elseif ($municipality_summary['GRAND_TOTAL']['household_percentage'] >= 40 && $municipality_summary['GRAND_TOTAL']['household_percentage'] <= 70) {
-                                                    $bg_class = "bg-warning";
-                                                }
-                                                ?>
-                                                    <div class="progress-bar <?php echo $bg_class; ?>"
+                                    $bg_class = "bg-success";
+                                    if ($data['warded_percentage'] < 40) {
+                                        $bg_class = "bg-danger";
+                                    } elseif ($data['warded_percentage'] >= 40 && $data['warded_percentage'] <= 70) {
+                                        $bg_class = "bg-warning";
+                                    }
+                                    ?>
+                                                    <div class="progress-bar <?php echo $bg_class; ?> position-relative"
                                                         role="progressbar"
-                                                        style="width: <?php echo $municipality_summary['GRAND_TOTAL']['household_percentage']; ?>%;"
-                                                        aria-valuenow="<?php echo $municipality_summary['GRAND_TOTAL']['household_percentage']; ?>"
+                                                        style="width: <?php echo $data['warded_percentage']; ?>%;"
+                                                        aria-valuenow="<?php echo $data['warded_percentage']; ?>"
                                                         aria-valuemin="0" aria-valuemax="100">
+                                                        <span class="position-absolute w-100 text-center fw-bold"
+                                                            style="left: 0; color: <?php echo ($data['warded_percentage'] < 40) ? 'white' : ((in_array($bg_class, ['bg-warning']) && $data['warded_percentage'] < 80) ? 'black' : 'white'); ?>">
+                                                            <?php echo $data['warded_percentage']; ?>%
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="fw-bold">
-                                            <?php echo number_format($municipality_summary['GRAND_TOTAL']['surveyed_members']); ?>
-                                        </td>
-                                        <td class="fw-bold">
-                                            <?php echo number_format($municipality_summary['GRAND_TOTAL']['total_surveyed']); ?>
-                                        </td>
                                     </tr>
+                                    <?php endif; ?>
+                                    <?php endforeach; ?>
+
                                 </tbody>
                             </table>
                             <?php endif; ?>
@@ -871,3 +929,12 @@ echo number_format($total_voters[0]);
 <?php
     }
 ?>
+
+<!-- Candidate Analysis Section - Strategic Strengths and Weaknesses -->
+<?php include 'views/candidate_analysis.php'; ?>
+
+<!-- Geographic Weakness Hotspots Analysis -->
+<?php include 'views/candidate_weakness_hotspots.php'; ?>
+
+<!-- Campaign Strategy Recommendations -->
+<?php include 'views/campaign_strategy.php'; ?>

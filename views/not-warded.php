@@ -104,7 +104,7 @@ $percent_female = $total_not_warded > 0 ? ($female_not_warded / $total_not_warde
                                 echo "Household Survey Province-wide";
                             }
                             ?>
-                            - Non-Warded Voters
+                            - Not-Warded Voters
                         </h2>
                         <button class="btn btn-sm btn-outline-success mt-2 removeonprint" data-bs-toggle="modal"
                             data-bs-target="#municipalityModal">
@@ -125,12 +125,12 @@ $percent_female = $total_not_warded > 0 ? ($female_not_warded / $total_not_warde
 
 <!-- Summary Cards -->
 <div class="row mb-4">
-    <!-- Total Non-Warded Card -->
+    <!-- Total Not-Warded Card -->
     <div class="col-md-6 col-lg-3 mb-3">
         <div class="card h-100 border-left-danger">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="text-xs text-uppercase text-danger fw-bold">Total Non-Warded</div>
+                    <div class="text-xs text-uppercase text-danger fw-bold">Total Not-Warded</div>
                     <div><i class="fa fa-user-times text-gray-300"></i></div>
                 </div>
                 <div class="h4 mb-1 fw-bold">
@@ -151,7 +151,7 @@ $percent_female = $total_not_warded > 0 ? ($female_not_warded / $total_not_warde
         </div>
     </div>
 
-    <!-- Male Non-Warded Card -->
+    <!-- Male Not-Warded Card -->
     <div class="col-md-6 col-lg-3 mb-3">
         <div class="card h-100 border-left-primary">
             <div class="card-body">
@@ -170,13 +170,13 @@ $percent_female = $total_not_warded > 0 ? ($female_not_warded / $total_not_warde
                     </div>
                 </div>
                 <div class="small text-muted">
-                    <?php echo round($percent_male, 1); ?>% of non-warded voters
+                    <?php echo round($percent_male, 1); ?>% of Not-Warded voters
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Female Non-Warded Card -->
+    <!-- Female Not-Warded Card -->
     <div class="col-md-6 col-lg-3 mb-3">
         <div class="card h-100 border-left-info">
             <div class="card-body">
@@ -195,7 +195,7 @@ $percent_female = $total_not_warded > 0 ? ($female_not_warded / $total_not_warde
                     </div>
                 </div>
                 <div class="small text-muted">
-                    <?php echo round($percent_female, 1); ?>% of non-warded
+                    <?php echo round($percent_female, 1); ?>% of Not-Warded
                 </div>
             </div>
         </div>
@@ -264,7 +264,7 @@ function calculate_age($birthday) {
     return floor((time() - strtotime($birthday)) / 31556926); // 31556926 is seconds in a year
 }
 
-// Get age groups for non-warded voters
+// Get age groups for Not-Warded voters
 $age_groups = [
     '18-24' => 0,
     '25-34' => 0,
@@ -274,7 +274,7 @@ $age_groups = [
     '65+' => 0
 ];
 
-// Get birthdays of non-warded voters
+// Get birthdays of Not-Warded voters
 $birthdays = get_array("SELECT v_birthday 
     FROM v_info 
     LEFT JOIN household_warding ON household_warding.mem_v_id = v_info.v_id 
@@ -322,7 +322,7 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
     <div class="col-lg-8 col-md-12">
         <div class="card shadow border-0 mb-4">
             <!-- <div class="card-header bg-secondary text-white fw-bold">
-                Age Distribution of Non-Warded Voters
+                Age Distribution of Not-Warded Voters
             </div> -->
             <div class="card-body">
                 <canvas id="ageDistributionChart" height="300"></canvas>
@@ -398,7 +398,7 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
                     </div>
                 </div>
                 <div class="small text-muted">
-                    <?php echo $percentage; ?>% of non-warded voters
+                    <?php echo $percentage; ?>% of Not-Warded voters
                 </div>
             </div>
         </div>
@@ -422,7 +422,7 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
 <footer></footer>
 <div class="card mb-4">
     <div class="card-header bg-secondary text-white fw-bold">
-        Summary of Non-Warded Voters per Barangay
+        Summary of Not-Warded Voters per Barangay
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -432,7 +432,7 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
                         <th>#</th>
                         <th>Barangay</th>
                         <th>Total Voters</th>
-                        <th>Non-Warded</th>
+                        <th>Not-Warded</th>
                         <th>Percent Not Warded</th>
                         <th>Status</th>
                     </tr>
@@ -507,7 +507,7 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
         $barangay = $bvalue["barangay"];
         $barangayid = $bvalue["id"];
         
-        // Get count of non-warded individuals in this barangay
+        // Get count of Not-Warded individuals in this barangay
         $brgy_not_warded_count = get_value("SELECT COUNT(*) 
             FROM v_info 
             LEFT JOIN household_warding ON household_warding.mem_v_id = v_info.v_id 
@@ -520,11 +520,11 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
             ?>
 
     <?php
-        // Only show barangays with non-warded individuals
+        // Only show barangays with Not-Warded individuals
         if ($brgy_not_warded_count > 0) {
     ?>
     <footer> </footer>
-    <?php if(isset($_GET["mun"]) !== ""){
+    <?php if(isset($_GET["brgy"]) !== ""){
 
     ?>
     <div class="col-md-12">
@@ -532,7 +532,7 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
             <div class="card-header bg-secondary">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold"><?php echo $barangay; ?></h5>
-                    <span class="badge bg-danger"><?php echo $brgy_not_warded_count; ?> Non-Warded</span>
+                    <span class="badge bg-danger"><?php echo $brgy_not_warded_count; ?> Not-Warded</span>
                 </div>
             </div>
             <div class="card-body">
@@ -544,6 +544,7 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
                                 <th>Lastname</th>
                                 <th>Name</th>
                                 <th>Birthday</th>
+                                <th>Age</th>
                                 <th>Gender</th>
                                 <th>Address</th>
                             </tr>
@@ -555,6 +556,7 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
                                 municipality,
                                 barangay,
                                 v_birthday,
+                                TIMESTAMPDIFF(YEAR, v_birthday, CURDATE()) AS age,
                                 v_gender, v_info.v_id
                             FROM
                                 v_info
@@ -573,7 +575,22 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
                                 <td><?php echo $key + 1; ?></td>
                                 <td><?php echo $value["v_lname"]; ?></td>
                                 <td><?php echo $value["v_fname"] . ' ' . $value["v_mname"]; ?></td>
-                                <td><?php echo $value["v_birthday"]; ?></td>
+                                <td><?php
+                                if($value["age"] < 18){
+                                    echo "N/A";
+                                }
+                               else{
+                                  echo $value["v_birthday"];
+                               }
+                              ?></td>
+                                <td>
+                                    <?php if($value["age"] > 18){
+                                    echo $value["age"];
+                                }else{
+                                    echo "N/A";
+                                }
+                                 ?>
+                                </td>
                                 <td><?php
                                 if($value["v_gender"] == "" || $value["v_gender"] == null){
                                     echo "N/A";
@@ -582,8 +599,8 @@ $age_percentages = json_encode(array_values($age_groups_percentage));
                                     echo $value["v_gender"];
                                 }
                                 ?></td>
-                                <td style="font-size:small" width="150px">
-                                    <?php echo $value["barangay"] . ', ' . $value["municipality"]; ?></td>
+                                <td width="250px">
+                                    <?php echo $value["barangay"]; ?></td>
                             </tr>
                             <?php
                             }

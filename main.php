@@ -66,7 +66,7 @@ body.loaded .content-wrapper {
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="notwarded-tab" data-bs-toggle="tab" data-bs-target="#notwarded"
-                        type="button" role="tab" aria-controls="notwarded" aria-selected="false">Non-Warded</button>
+                        type="button" role="tab" aria-controls="notwarded" aria-selected="false">Not-Warded</button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="yeswarded-tab" data-bs-toggle="tab" data-bs-target="#yeswarded"
@@ -102,12 +102,12 @@ body.loaded .content-wrapper {
                 </div>
                 <div class="tab-pane fade" id="yeswarded" role="tabpanel" aria-labelledby="yeswarded-tab">
                     <!-- Turnouts content -->
-                    <?php require_once 'views/yes-warded.php'; ?>
+                    <?php //require_once 'views/yes-warded.php'; ?>
                 </div>
                 <!-- Tab content -->
                 <div class="tab-pane fade" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
                     <!-- Families content -->
-                    <?php require_once 'views/families.php'; ?>
+                    <?php //require_once 'views/families.php'; ?>
                 </div>
 
                 <div class="tab-pane fade" id="families" role="tabpanel" aria-labelledby="families-tab">
@@ -124,7 +124,7 @@ body.loaded .content-wrapper {
                     <?php 
                      
                      ?>
-                    <?php require_once 'views/households.php'; ?>
+                    <?php //require_once 'views/households.php'; ?>
                 </div>
             </div>
         </div>
